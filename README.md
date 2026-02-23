@@ -227,16 +227,27 @@ Each wheel type has a unique color scheme defined in:
 
 ## 📄 License
 
-This project is proprietary software. All rights reserved.
+**⚠️ PROPRIETARY SOFTWARE - ALL RIGHTS RESERVED**
 
-## 🤝 Contributing
+This software is protected under a strict proprietary license. See [LICENSE](LICENSE) for full terms.
 
-Contributions are welcome! Please read our contributing guidelines before submitting a pull request.
+**You are NOT permitted to:**
+- Download, copy, clone, or fork this repository
+- Modify, adapt, or create derivative works
+- Distribute, sublicense, or transfer the software
+- Reverse engineer or decompile the source code
+- Use for commercial purposes without authorization
 
-## 📧 Support
+**Access is ONLY permitted through the official Vercel deployment.**
 
-For support, open an issue on GitHub.
+Unauthorized use may result in severe civil and criminal penalties.
+
+© 2024-2026 Abu Sayed. All Rights Reserved.
+
+## 📧 Contact
+
+For inquiries or authorization requests: abusayed102188@gmail.com
 
 ---
 
-Made with ❤️ by Digital Salami Team
+Made with ❤️ by Abu Sayed

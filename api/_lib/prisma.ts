@@ -1,14 +1,23 @@
 import { PrismaClient } from "@prisma/client";
-import { neon } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
+
+// Enable fetch for serverless
+neonConfig.fetchConnectionCache = true;
 
 declare global {
   var prisma: PrismaClient | undefined;
 }
 
 const createPrismaClient = () => {
-  const sql = neon(process.env.DATABASE_URL!);
-  const adapter = new PrismaNeon(sql);
+  const connectionString = process.env.DATABASE_URL;
+  
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+  
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaNeon(pool);
   return new PrismaClient({ adapter });
 };
 

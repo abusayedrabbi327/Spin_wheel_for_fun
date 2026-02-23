@@ -1,0 +1,169 @@
+# PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+## Digital Salami Wheel - All Rights Reserved
+
+**Copyright © 2024-2026 Abu Sayed. All Rights Reserved.**
+
+---
+
+## IMPORTANT — READ CAREFULLY BEFORE ACCESSING THIS SOFTWARE
+
+This Proprietary Software License Agreement ("Agreement") is a legally binding contract between you ("User", "You", or "Your") and Abu Sayed ("Owner", "Licensor", "We", "Us", or "Our") governing your access to and use of the Digital Salami Wheel software application, including all associated source code, documentation, APIs, databases, designs, and related materials (collectively, the "Software").
+
+BY ACCESSING, VIEWING, OR USING THE SOFTWARE IN ANY MANNER, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY ALL TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, YOU ARE STRICTLY PROHIBITED FROM ACCESSING OR USING THE SOFTWARE.
+
+---
+
+## 1. GRANT OF LIMITED ACCESS LICENSE
+
+1.1 **Access Only License**: Subject to strict compliance with this Agreement, the Owner grants You a limited, non-exclusive, non-transferable, non-sublicensable, revocable license to ACCESS and USE the Software solely through the official hosted application at the designated Vercel deployment URL ("Authorized Platform").
+
+1.2 **No Ownership Rights**: This license does NOT grant You any ownership rights, intellectual property rights, or any other proprietary rights in or to the Software. All rights not expressly granted herein are reserved by the Owner.
+
+1.3 **Revocability**: This license may be revoked at any time, for any reason or no reason, at the sole and absolute discretion of the Owner, without prior notice or liability.
+
+---
+
+## 2. ABSOLUTE RESTRICTIONS AND PROHIBITIONS
+
+**YOU ARE STRICTLY PROHIBITED FROM:**
+
+2.1 **Downloading**: Downloading, copying, cloning, forking, or otherwise obtaining a copy of the Software's source code, compiled code, or any portion thereof by any means whatsoever.
+
+2.2 **Modification**: Modifying, adapting, altering, translating, reverse engineering, decompiling, disassembling, or creating derivative works based on the Software.
+
+2.3 **Distribution**: Distributing, publishing, licensing, sublicensing, selling, reselling, renting, leasing, lending, or otherwise transferring the Software or any rights therein to any third party.
+
+2.4 **Reproduction**: Reproducing, duplicating, copying, or storing the Software or any portion thereof in any form or medium.
+
+2.5 **Reverse Engineering**: Attempting to derive the source code, algorithms, data structures, or underlying ideas of the Software through reverse engineering, decompilation, disassembly, or any other method.
+
+2.6 **Circumvention**: Circumventing, disabling, or otherwise interfering with security-related features of the Software or features that prevent or restrict use or copying.
+
+2.7 **Unauthorized Access**: Accessing the Software through any means other than the Authorized Platform, including but not limited to direct API access, database access, or server access.
+
+2.8 **Data Extraction**: Scraping, harvesting, data mining, or extracting any data, content, or information from the Software by automated or manual means.
+
+2.9 **Commercial Use Without Authorization**: Using the Software for any commercial purpose without express written authorization from the Owner.
+
+2.10 **Competitive Analysis**: Using the Software to develop, enhance, or market any competing product or service.
+
+---
+
+## 3. INTELLECTUAL PROPERTY RIGHTS
+
+3.1 **Sole Ownership**: The Software, including all source code, object code, algorithms, databases, APIs, documentation, user interfaces, designs, graphics, trademarks, trade secrets, and all other intellectual property embodied therein, is and shall remain the sole and exclusive property of the Owner.
+
+3.2 **Copyright Protection**: The Software is protected by copyright laws, international treaty provisions, and other intellectual property laws. Unauthorized reproduction or distribution of the Software, or any portion thereof, may result in severe civil and criminal penalties.
+
+3.3 **Trade Secrets**: The Software contains valuable trade secrets and proprietary information belonging to the Owner. You agree to maintain the confidentiality of such trade secrets and not to disclose them to any third party.
+
+3.4 **No Implied Rights**: Nothing in this Agreement shall be construed to grant any rights by implication, estoppel, or otherwise, except for the limited access rights expressly granted herein.
+
+---
+
+## 4. CONFIDENTIALITY OBLIGATIONS
+
+4.1 **Confidential Information**: All aspects of the Software, including but not limited to its architecture, design, functionality, source code, algorithms, and business logic, constitute confidential and proprietary information of the Owner.
+
+4.2 **Non-Disclosure**: You agree not to disclose, publish, or otherwise reveal any confidential information of the Owner to any third party during or after your use of the Software.
+
+4.3 **Security Measures**: You agree to take all reasonable measures to protect the confidentiality of the Owner's confidential information with at least the same degree of care you use to protect your own confidential information.
+
+---
+
+## 5. TERMINATION
+
+5.1 **Immediate Termination**: The Owner may terminate this Agreement and your access to the Software immediately, without notice, for any reason or no reason whatsoever.
+
+5.2 **Automatic Termination**: This Agreement shall automatically terminate upon any breach of its terms by You.
+
+5.3 **Effect of Termination**: Upon termination, all rights granted to You under this Agreement shall immediately cease, and You must immediately discontinue all use of the Software.
+
+5.4 **Survival**: Sections 2, 3, 4, 6, 7, 8, and 9 shall survive the termination of this Agreement.
+
+---
+
+## 6. DISCLAIMER OF WARRANTIES
+
+6.1 **AS-IS BASIS**: THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+6.2 **NO WARRANTIES**: THE OWNER EXPRESSLY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, RELIABILITY, AVAILABILITY, AND ANY WARRANTIES ARISING FROM COURSE OF DEALING OR USAGE OF TRADE.
+
+6.3 **NO GUARANTEE**: THE OWNER DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS, OPERATE WITHOUT INTERRUPTION, BE ERROR-FREE, OR BE SECURE.
+
+---
+
+## 7. LIMITATION OF LIABILITY
+
+7.1 **NO LIABILITY**: TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE OWNER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES.
+
+7.2 **MAXIMUM LIABILITY**: IN NO EVENT SHALL THE OWNER'S TOTAL LIABILITY TO YOU EXCEED ONE UNITED STATES DOLLAR (USD $1.00).
+
+7.3 **ACKNOWLEDGMENT**: YOU ACKNOWLEDGE THAT THE LIMITATIONS OF LIABILITY IN THIS SECTION ARE AN ESSENTIAL ELEMENT OF THE BARGAIN BETWEEN YOU AND THE OWNER.
+
+---
+
+## 8. INDEMNIFICATION
+
+You agree to indemnify, defend, and hold harmless the Owner and its affiliates, officers, directors, employees, agents, and successors from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to:
+
+8.1 Your use or misuse of the Software;
+8.2 Your breach of this Agreement;
+8.3 Your violation of any applicable law or regulation;
+8.4 Your violation of any third-party rights.
+
+---
+
+## 9. GOVERNING LAW AND DISPUTE RESOLUTION
+
+9.1 **Governing Law**: This Agreement shall be governed by and construed in accordance with the laws of Bangladesh, without regard to its conflict of law provisions.
+
+9.2 **Jurisdiction**: Any dispute arising out of or relating to this Agreement shall be subject to the exclusive jurisdiction of the courts located in Bangladesh.
+
+9.3 **Waiver of Jury Trial**: TO THE EXTENT PERMITTED BY LAW, YOU HEREBY WAIVE ANY RIGHT TO A JURY TRIAL IN CONNECTION WITH ANY DISPUTE ARISING UNDER THIS AGREEMENT.
+
+---
+
+## 10. ENFORCEMENT AND REMEDIES
+
+10.1 **Injunctive Relief**: You acknowledge that any breach of this Agreement may cause irreparable harm to the Owner for which monetary damages would be inadequate. Therefore, the Owner shall be entitled to seek injunctive or other equitable relief without the necessity of proving actual damages or posting any bond.
+
+10.2 **Cumulative Remedies**: All remedies available to the Owner under this Agreement are cumulative and in addition to any other remedies available at law or in equity.
+
+10.3 **Legal Fees**: In any action to enforce this Agreement, the prevailing party shall be entitled to recover its reasonable attorneys' fees and costs.
+
+---
+
+## 11. GENERAL PROVISIONS
+
+11.1 **Entire Agreement**: This Agreement constitutes the entire agreement between You and the Owner concerning the Software and supersedes all prior or contemporaneous agreements, representations, warranties, and understandings.
+
+11.2 **Severability**: If any provision of this Agreement is held to be invalid or unenforceable, such provision shall be modified to the minimum extent necessary to make it valid and enforceable, and the remaining provisions shall continue in full force and effect.
+
+11.3 **No Waiver**: The failure of the Owner to enforce any right or provision of this Agreement shall not constitute a waiver of such right or provision.
+
+11.4 **Assignment**: You may not assign or transfer this Agreement or any rights hereunder without the prior written consent of the Owner. The Owner may assign this Agreement without restriction.
+
+11.5 **Headings**: The section headings in this Agreement are for convenience only and have no legal or contractual effect.
+
+---
+
+## 12. CONTACT INFORMATION
+
+For questions regarding this license or to request authorization:
+
+**Abu Sayed**
+Email: abusayed102188@gmail.com
+
+---
+
+## ACKNOWLEDGMENT
+
+BY ACCESSING OR USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS. YOU FURTHER ACKNOWLEDGE THAT THIS AGREEMENT IS THE COMPLETE AND EXCLUSIVE STATEMENT OF THE AGREEMENT BETWEEN YOU AND THE OWNER, SUPERSEDING ANY PROPOSAL OR PRIOR AGREEMENT, ORAL OR WRITTEN, AND ANY OTHER COMMUNICATIONS BETWEEN YOU AND THE OWNER RELATING TO THE SUBJECT MATTER OF THIS AGREEMENT.
+
+---
+
+**Last Updated: February 24, 2026**
+
+**© 2024-2026 Abu Sayed. ALL RIGHTS RESERVED. UNAUTHORIZED USE, REPRODUCTION, OR DISTRIBUTION IS STRICTLY PROHIBITED AND MAY RESULT IN SEVERE CIVIL AND CRIMINAL PENALTIES.**
