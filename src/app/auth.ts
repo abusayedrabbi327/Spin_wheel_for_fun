@@ -3,10 +3,18 @@
 
 export type UserRole = "admin" | "user" | null;
 
+interface UserInfo {
+  id?: string;
+  email: string;
+  name?: string;
+  role?: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   role: UserRole;
   email: string | null;
+  user?: UserInfo;
 }
 
 const AUTH_KEY = "spinwheel_auth";
@@ -27,17 +35,31 @@ export function getAuthState(): AuthState {
   return { isAuthenticated: false, role: null, email: null };
 }
 
+export function setAuthState(state: AuthState): void {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(state));
+}
+
 export function login(email: string, password: string): { success: boolean; role: UserRole } {
   // Check if admin
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    const state: AuthState = { isAuthenticated: true, role: "admin", email };
+    const state: AuthState = { 
+      isAuthenticated: true, 
+      role: "admin", 
+      email,
+      user: { email, name: "Admin" }
+    };
     localStorage.setItem(AUTH_KEY, JSON.stringify(state));
     return { success: true, role: "admin" };
   }
   
   // Regular user - accept any credentials for demo
   if (email && password) {
-    const state: AuthState = { isAuthenticated: true, role: "user", email };
+    const state: AuthState = { 
+      isAuthenticated: true, 
+      role: "user", 
+      email,
+      user: { email, name: email.split("@")[0] }
+    };
     localStorage.setItem(AUTH_KEY, JSON.stringify(state));
     return { success: true, role: "user" };
   }

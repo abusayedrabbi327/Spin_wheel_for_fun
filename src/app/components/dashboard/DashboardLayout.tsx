@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import {
   LayoutDashboard,
@@ -11,9 +11,11 @@ import {
   X,
   Bell,
   ChevronDown,
+  User,
+  BellOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isAuthenticated, logout } from "../../auth";
+import { isAuthenticated, logout, getAuthState } from "../../auth";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -26,6 +28,28 @@ export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  const authState = getAuthState();
+  const userName = authState?.user?.name || authState?.user?.email?.split("@")[0] || "User";
+  const userInitials = userName.slice(0, 2).toUpperCase();
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Protect dashboard routes - redirect if not authenticated
   useEffect(() => {
@@ -127,18 +151,77 @@ export function DashboardLayout() {
             <div className="hidden lg:block" />
 
             <div className="flex items-center gap-4">
-              <button className="relative text-muted-foreground hover:text-foreground transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-salami-green rounded-full" />
-              </button>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-salami-green to-salami-gold flex items-center justify-center text-white text-[0.75rem]" style={{ fontWeight: 600 }}>
-                  AH
-                </div>
-                <span className="hidden md:block text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>
-                  Ahmed Hassan
-                </span>
-                <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
+              {/* Notifications dropdown */}
+              <div className="relative" ref={notificationsRef}>
+                <button 
+                  onClick={() => {
+                    setNotificationsOpen(!notificationsOpen);
+                    setProfileOpen(false);
+                  }}
+                  className="relative text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
+                </button>
+                
+                {notificationsOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-border py-2 z-50">
+                    <div className="px-4 py-2 border-b border-border">
+                      <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+                    </div>
+                    <div className="py-8 text-center">
+                      <BellOff className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No notifications yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">We'll notify you when something happens</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Profile dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button 
+                  onClick={() => {
+                    setProfileOpen(!profileOpen);
+                    setNotificationsOpen(false);
+                  }}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-salami-green to-salami-gold flex items-center justify-center text-white text-[0.75rem]" style={{ fontWeight: 600 }}>
+                    {userInitials}
+                  </div>
+                  <span className="hidden md:block text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>
+                    {userName}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground hidden md:block transition-transform ${profileOpen ? "rotate-180" : ""}`} />
+                </button>
+                
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-border py-2 z-50">
+                    <div className="px-4 py-2 border-b border-border">
+                      <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{authState?.user?.email}</p>
+                    </div>
+                    <Link
+                      to="/dashboard/settings"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-gray-50 hover:text-foreground transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        toast.success("Logged out successfully");
+                        navigate("/login");
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors w-full"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

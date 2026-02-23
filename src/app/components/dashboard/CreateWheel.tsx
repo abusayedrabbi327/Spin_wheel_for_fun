@@ -27,8 +27,10 @@ import {
   Gift,
   Utensils,
   Palette,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { wheelsApi } from "../../api";
 
 type InputMode = "manual" | "bulk" | "file";
 type WheelType = "names" | "numbers" | "decisions" | "prizes" | "food" | "custom";
@@ -215,6 +217,7 @@ export function CreateWheel() {
     { id: 1, value: "", label: "" },
     { id: 2, value: "", label: "" },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [inputMode, setInputMode] = useState<InputMode>("manual");
   const [bulkText, setBulkText] = useState("");
@@ -401,15 +404,47 @@ export function CreateWheel() {
     toast.success(`Template applied — ${parsed.length} items added!`);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     const filledItems = items.filter((p) => p.label.trim());
     if (filledItems.length < 2) {
       toast.error("Please add at least 2 items to the wheel");
       return;
     }
-    toast.success("Wheel created successfully!");
-    navigate("/dashboard/campaign/1");
+
+    if (!title.trim()) {
+      toast.error("Please enter a wheel title");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await wheelsApi.create({
+        title: title.trim(),
+        type: wheelType.toUpperCase(),
+        maxSpins: maxWinners ? parseInt(maxWinners) : undefined,
+        expiryDate: expiryDate || undefined,
+        allowBetterLuck,
+        items: filledItems.map((item) => ({
+          label: item.label.trim(),
+          value: item.value.trim() || undefined,
+        })),
+      });
+
+      if (result.success && result.data) {
+        toast.success("Wheel created successfully!");
+        navigate(`/spin/${result.data.slug}`);
+      } else {
+        toast.error(result.error || "Failed to create wheel");
+      }
+    } catch (error) {
+      toast.error("Failed to create wheel. Please try again.");
+      console.error("Create wheel error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filledCount = items.filter((p) => p.label.trim()).length;
@@ -939,11 +974,21 @@ export function CreateWheel() {
           </button>
           <button
             type="submit"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25"
+            disabled={isSubmitting}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-8 py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontWeight: 600 }}
           >
-            <Save className="w-5 h-5" />
-            Create Wheel
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                Create Wheel
+              </>
+            )}
           </button>
         </div>
       </motion.form>
