@@ -1,18 +1,59 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { Star, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Star, Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { setAuthState } from "../../auth";
+import { authApi } from "../../api";
 
 export function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/dashboard");
+    
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await authApi.register(email, password, name || undefined);
+      
+      if (result.success && result.data) {
+        // Store user info in auth state
+        setAuthState({
+          isAuthenticated: true,
+          role: "user",
+          email: result.data.user.email,
+          user: {
+            id: result.data.user.id,
+            email: result.data.user.email,
+            name: result.data.user.name || undefined,
+            role: result.data.user.role
+          }
+        });
+        toast.success("Account created successfully!");
+        navigate("/dashboard");
+      } else {
+        toast.error(result.error || "Registration failed");
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -120,10 +161,18 @@ export function RegisterPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25"
+              disabled={isLoading}
+              className="w-full py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25 disabled:opacity-70 flex items-center justify-center gap-2"
               style={{ fontWeight: 600 }}
             >
-              Create Account
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

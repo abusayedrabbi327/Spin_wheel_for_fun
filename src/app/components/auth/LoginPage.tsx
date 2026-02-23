@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { Star, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Star, Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { login } from "../../auth";
+import { login, setAuthState, ADMIN_EMAIL, ADMIN_PASSWORD } from "../../auth";
+import { authApi } from "../../api";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -19,18 +21,41 @@ export function LoginPage() {
       return;
     }
 
-    const result = login(email, password);
-    
-    if (result.success) {
-      if (result.role === "admin") {
-        toast.success("Welcome, Admin!");
-        navigate("/admin");
-      } else {
+    // Check for admin login (fixed credentials)
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      login(email, password);
+      toast.success("Welcome, Admin!");
+      navigate("/admin");
+      return;
+    }
+
+    // Regular user - call API
+    setIsLoading(true);
+    try {
+      const result = await authApi.login(email, password);
+      
+      if (result.success && result.data) {
+        // Store user info in auth state
+        setAuthState({
+          isAuthenticated: true,
+          role: result.data.user.role === "ADMIN" ? "admin" : "user",
+          email: result.data.user.email,
+          user: {
+            id: result.data.user.id,
+            email: result.data.user.email,
+            name: result.data.user.name || undefined,
+            role: result.data.user.role
+          }
+        });
         toast.success("Login successful!");
         navigate("/dashboard");
+      } else {
+        toast.error(result.error || "Invalid credentials");
       }
-    } else {
-      toast.error("Invalid credentials");
+    } catch (error) {
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -144,10 +169,18 @@ export function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25"
+              disabled={isLoading}
+              className="w-full py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25 disabled:opacity-70 flex items-center justify-center gap-2"
               style={{ fontWeight: 600 }}
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 
