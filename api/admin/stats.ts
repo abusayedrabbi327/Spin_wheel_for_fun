@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma";
-import { getUserFromRequest } from "../_lib/auth";
-import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils";
+import prisma from "../_lib/prisma.js";
+import { getUserFromRequest } from "../_lib/auth.js";
+import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -55,14 +55,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         where: { createdAt: { gte: sevenDaysAgo } },
       }),
       prisma.spin.count({
-        where: { spunAt: { gte: sevenDaysAgo } },
+        where: { createdAt: { gte: sevenDaysAgo } },
       }),
 
       // Spins per day (last 30 days)
       prisma.spin.groupBy({
-        by: ["spunAt"],
+        by: ["createdAt"],
         where: {
-          spunAt: { gte: thirtyDaysAgo },
+          createdAt: { gte: thirtyDaysAgo },
         },
         _count: true,
       }),
@@ -82,8 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Process spins by day into a simpler format
     const spinsPerDay: Record<string, number> = {};
-    spinsByDay.forEach((entry: { spunAt: Date; _count: number }) => {
-      const date = new Date(entry.spunAt).toISOString().split("T")[0];
+    spinsByDay.forEach((entry: { createdAt: Date; _count: number }) => {
+      const date = new Date(entry.createdAt).toISOString().split("T")[0];
       spinsPerDay[date] = (spinsPerDay[date] || 0) + entry._count;
     });
 

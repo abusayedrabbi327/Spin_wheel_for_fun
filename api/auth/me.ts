@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma";
-import { getUserFromRequest } from "../_lib/auth";
-import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils";
+import prisma from "../_lib/prisma.js";
+import { getUserFromRequest } from "../_lib/auth.js";
+import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS

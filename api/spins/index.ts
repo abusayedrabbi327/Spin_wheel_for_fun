@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma";
-import { getUserFromRequest } from "../_lib/auth";
-import { success, error, notFound, methodNotAllowed, serverError } from "../_lib/utils";
+import prisma from "../_lib/prisma.js";
+import { getUserFromRequest } from "../_lib/auth.js";
+import { success, error, notFound, methodNotAllowed, serverError } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // POST - Record a new spin
     if (req.method === "POST") {
-      const { wheelId, result, spinnerName, spinnerEmail } = req.body;
+      const { wheelId, result, spinnerName, spinnerEmail, participantName, participantPhone } = req.body;
 
       if (!wheelId) {
         return error(res, "Wheel ID is required");
@@ -61,8 +61,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data: {
           wheelId,
           result,
-          spinnerName: spinnerName || null,
-          spinnerEmail: spinnerEmail || null,
+          participantName: participantName || spinnerName || "Anonymous",
+          participantPhone: participantPhone || spinnerEmail || null,
         },
       });
 
@@ -103,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const [spins, total] = await Promise.all([
         prisma.spin.findMany({
           where: { wheelId: wheelIdStr },
-          orderBy: { spunAt: "desc" },
+          orderBy: { createdAt: "desc" },
           take,
           skip,
         }),
