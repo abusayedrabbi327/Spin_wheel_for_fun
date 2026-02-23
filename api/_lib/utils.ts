@@ -26,7 +26,19 @@ export function methodNotAllowed(res: VercelResponse) {
 
 export function serverError(res: VercelResponse, err: unknown) {
   console.error("Server error:", err);
-  return res.status(500).json({ success: false, error: "Internal server error" });
+  const message = err instanceof Error ? err.message : "Internal server error";
+  const stack = err instanceof Error ? err.stack : undefined;
+  
+  // In development, return more details
+  if (process.env.NODE_ENV !== "production") {
+    return res.status(500).json({ 
+      success: false, 
+      error: message,
+      stack,
+    });
+  }
+  
+  return res.status(500).json({ success: false, error: message });
 }
 
 // Generate URL-friendly slug

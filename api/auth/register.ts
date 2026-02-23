@@ -21,8 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { email, password, name } = req.body;
 
-    if (!email || !password || !name) {
-      return error(res, "Email, password, and name are required");
+    if (!email || !password) {
+      return error(res, "Email and password are required");
     }
 
     if (password.length < 6) {
@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data: {
         email: email.toLowerCase(),
         password: hashedPassword,
-        name,
+        name: name || email.split("@")[0],
         role: "USER",
       },
     });
