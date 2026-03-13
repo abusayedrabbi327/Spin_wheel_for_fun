@@ -7,7 +7,7 @@ import {
   Trophy,
   ArrowRight,
   Dices,
-  Shuffle,
+  MoonStar,
   Zap,
   Target,
 } from "lucide-react";
@@ -15,60 +15,60 @@ import {
 const features = [
   {
     icon: Sparkles,
-    title: "Create Any Wheel",
+    title: "Create Ramadan Wheels",
     description:
-      "Build custom spin wheels with names, numbers, prizes, or anything you want to randomize.",
+      "Build simple wheels for iftar teams, gift draws, and family activities.",
   },
   {
     icon: Link2,
-    title: "Share Public Link",
+    title: "Share One Simple Link",
     description:
-      "Share a unique link so anyone can spin your wheel from their phone or browser.",
+      "Send your wheel link to friends and family so everyone can join instantly.",
   },
   {
     icon: Users,
     title: "Track Every Spin",
     description:
-      "See who spun, what they landed on, and when - all in real-time.",
+      "See participant names and outcomes in one clean dashboard.",
   },
   {
     icon: Trophy,
-    title: "Manage Results",
+    title: "Pick Fair Winners",
     description:
-      "View all results, manage outcomes, and export reports easily.",
+      "Use fair random picks for giveaways and Ramadan community events.",
   },
 ];
 
 const useCases = [
-  { label: "Giveaways & Prizes", icon: "🎁" },
-  { label: "Who Pays the Bill?", icon: "💸" },
-  { label: "Random Name Picker", icon: "🎯" },
-  { label: "Tip Splitting", icon: "🧾" },
-  { label: "Party Games", icon: "🎉" },
-  { label: "Classroom Random Pick", icon: "🎓" },
+  { label: "Iftar Host Picker", icon: "🌙" },
+  { label: "Suhoor Menu Vote", icon: "🥘" },
+  { label: "Masjid Giveaway", icon: "🎁" },
+  { label: "Family Quiz Teams", icon: "👨‍👩‍👧‍👦" },
+  { label: "Charity Draw", icon: "🤲" },
+  { label: "Kids Activity Pick", icon: "🧒" },
 ];
 
 const steps = [
   {
     num: "01",
     icon: Target,
-    title: "Create Your Wheel",
+    title: "Create Your Ramadan Wheel",
     description:
-      "Add custom items - names, numbers, prizes, options - whatever you need to randomize.",
+      "Add names, tasks, or prize items in less than a minute.",
   },
   {
     num: "02",
     icon: Link2,
     title: "Share the Link",
     description:
-      "Send the unique link via WhatsApp, SMS, email, or any social media platform.",
+      "Share through WhatsApp or social media so everyone can join.",
   },
   {
     num: "03",
     icon: Zap,
-    title: "Spin & Decide!",
+    title: "Spin and Celebrate",
     description:
-      "People enter their name, spin the wheel, and get a random result instantly.",
+      "Spin live during gatherings and get instant fair results.",
   },
 ];
 
@@ -172,7 +172,7 @@ export function LandingPage() {
               <Dices className="w-5 h-5 text-white" />
             </div>
             <span className="text-[1.125rem] text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-              SpinWheel
+              Salami Wheels
             </span>
           </Link>
           <div className="flex items-center gap-3">
@@ -202,19 +202,18 @@ export function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-salami-gold-light text-salami-gold rounded-full mb-6">
-              <Shuffle className="w-4 h-4" />
-              <span className="text-[0.875rem]">Random picks made fun</span>
+              <MoonStar className="w-4 h-4" />
+              <span className="text-[0.875rem]">Ramadan Edition</span>
             </div>
             <h1 className="text-[2.5rem] md:text-[3.5rem] text-foreground mb-6 font-['Poppins',sans-serif]" style={{ fontWeight: 800, lineHeight: 1.1 }}>
-              Spin the Wheel,{" "}
+              Salami Wheels,{" "}
               <span className="bg-gradient-to-r from-salami-green to-salami-gold bg-clip-text text-transparent">
-                Let Chance Decide
+                Ramadan Nights Made Simple
               </span>
             </h1>
             <p className="text-[1.125rem] text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
-              Create customizable spin wheels for any occasion - giveaways,
-              random picks, who pays the bill, party games, and more. Share a
-              link and let anyone spin!
+              Create simple themed wheels for iftar planning, community events,
+              and fair prize draws. Share one link and let everyone spin.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
@@ -251,7 +250,7 @@ export function LandingPage() {
       <section className="py-12 border-y border-border bg-salami-green-light/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-muted-foreground text-[0.875rem] mb-6" style={{ fontWeight: 500 }}>
-            Perfect for any occasion
+            Perfect for Ramadan gatherings
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {useCases.map((uc) => (
@@ -279,10 +278,10 @@ export function LandingPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-[2rem] md:text-[2.5rem] text-foreground mb-4 font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-              Everything You Need
+              Simple, Useful, Fair
             </h2>
             <p className="text-muted-foreground text-[1.125rem] max-w-2xl mx-auto">
-              A complete platform to create, share, and manage your spin wheels
+              A lightweight wheel app for quick Ramadan activities
             </p>
           </motion.div>
 
@@ -322,7 +321,7 @@ export function LandingPage() {
               How It Works
             </h2>
             <p className="text-muted-foreground text-[1.125rem] max-w-2xl mx-auto">
-              Three simple steps to let the wheel decide
+              Three quick steps for your Ramadan wheel
             </p>
           </motion.div>
 
@@ -371,11 +370,11 @@ export function LandingPage() {
             />
             <div className="relative z-10">
               <h2 className="text-[2rem] md:text-[2.5rem] text-white mb-4 font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-                Ready to Spin?
+                Ready for Ramadan Spins?
               </h2>
               <p className="text-white/80 text-[1.125rem] mb-8 max-w-lg mx-auto">
-                Create your first wheel in seconds. No sign-up needed to try it
-                out - just build, share, and spin!
+                Create your first Salami Wheel in seconds and run fair picks at
+                your next iftar or community event.
               </p>
               <Link
                 to="/register"
@@ -400,13 +399,12 @@ export function LandingPage() {
                   <Dices className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-[1.125rem] font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-                  SpinWheel
+                  Salami Wheels
                 </span>
               </div>
               <p className="text-white/60 text-[0.875rem] max-w-sm">
-                The fun way to make random decisions. Create spin wheels for
-                giveaways, random picks, games, and any event where you need
-                chance to decide.
+                A simple Ramadan-themed wheel app for family activities,
+                giveaways, and community events.
               </p>
             </div>
             <div>
@@ -447,7 +445,7 @@ export function LandingPage() {
             </div>
           </div>
           <div className="border-t border-white/10 mt-12 pt-8 text-center text-white/40 text-[0.875rem]">
-            &copy; 2026 SpinWheel. All rights reserved.
+            &copy; 2026 Salami Wheels. All rights reserved.
           </div>
         </div>
       </footer>

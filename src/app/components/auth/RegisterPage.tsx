@@ -84,7 +84,7 @@ export function RegisterPage() {
               <Star className="w-6 h-6 text-white" />
             </div>
             <span className="text-[1.25rem] text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-              SpinWheel
+              Salami Wheels
             </span>
           </Link>
         </div>
@@ -95,7 +95,7 @@ export function RegisterPage() {
               Create Account
             </h1>
             <p className="text-muted-foreground text-[0.875rem]">
-              Start creating your spin wheels today
+              Start creating your Ramadan wheels today
             </p>
           </div>
 
