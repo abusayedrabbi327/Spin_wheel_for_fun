@@ -421,13 +421,10 @@ export function CreateWheel() {
     setIsSubmitting(true);
 
     try {
-      // Set expiry to the end of the selected day (local time)
+      // Pass the exact date & time the user selected
       let finalExpiryDate: string | undefined = undefined;
       if (expiryDate) {
-        const d = new Date(expiryDate);
-        // Add 23 hours, 59 mins, 59 secs to make it expire at the END of the selected day
-        d.setHours(23, 59, 59, 999);
-        finalExpiryDate = d.toISOString();
+        finalExpiryDate = new Date(expiryDate).toISOString();
       }
 
       const result = await wheelsApi.create({
@@ -519,8 +516,8 @@ export function CreateWheel() {
                     type="button"
                     onClick={() => setWheelType(type.id)}
                     className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${isSelected
-                        ? "border-salami-green bg-salami-green-light"
-                        : "border-border hover:border-salami-green/50 hover:bg-gray-50"
+                      ? "border-salami-green bg-salami-green-light"
+                      : "border-border hover:border-salami-green/50 hover:bg-gray-50"
                       }`}
                   >
                     <div
@@ -570,10 +567,10 @@ export function CreateWheel() {
             <div>
               <label className="block text-[0.875rem] text-foreground mb-1.5">
                 <Calendar className="w-4 h-4 inline mr-1" />
-                Expiry Date
+                Expiry Date & Time
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-border bg-input-background focus:outline-none focus:ring-2 focus:ring-salami-green/30 focus:border-salami-green transition-all"
@@ -693,8 +690,8 @@ export function CreateWheel() {
                 type="button"
                 onClick={() => setInputMode(tab.mode)}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[0.8125rem] transition-all ${inputMode === tab.mode
-                    ? "bg-white text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
                 style={{ fontWeight: inputMode === tab.mode ? 600 : 400 }}
               >
@@ -897,8 +894,8 @@ export function CreateWheel() {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={`flex flex-col items-center justify-center gap-3 p-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${isDragOver
-                      ? "border-salami-green bg-salami-green-light/40 scale-[1.01]"
-                      : "border-border hover:border-salami-green/50 hover:bg-salami-green-light/10"
+                    ? "border-salami-green bg-salami-green-light/40 scale-[1.01]"
+                    : "border-border hover:border-salami-green/50 hover:bg-salami-green-light/10"
                     }`}
                 >
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${isDragOver ? "bg-salami-green/10" : "bg-gray-100"
