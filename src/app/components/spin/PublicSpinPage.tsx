@@ -405,13 +405,30 @@ export function PublicSpinPage() {
 
               <p className="text-[0.75rem] text-muted-foreground mb-5">No take-backs! The wheel never lies.</p>
 
-              <button onClick={resetSpin} className="w-full py-3 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-all" style={{ fontWeight: 600 }}>
-                Spin Again
-              </button>
+              <div className="flex gap-3 mt-2">
+                <button onClick={resetSpin} className="flex-1 py-3 bg-gray-100 text-foreground rounded-xl hover:bg-gray-200 transition-all" style={{ fontWeight: 600 }}>
+                  Spin Again
+                </button>
+                <Link to="/" className="flex-[2] flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-salami-green to-salami-green-dark text-white rounded-xl hover:shadow-lg transition-all" style={{ fontWeight: 600 }}>
+                  <Dices className="w-4 h-4" /> Create Your Own
+                </Link>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Footer CTA */}
+      {!result && (
+        <div className="relative z-10 text-center pb-12 pt-4 px-4">
+          <p className="text-white/80 text-[0.875rem] mb-3 font-['Poppins',sans-serif]" style={{ fontWeight: 500 }}>Want to engage your audience like this?</p>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+            <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl transition-all shadow-lg backdrop-blur-md font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>
+              <Dices className="w-5 h-5" /> Create Your Own Salami Wheel
+            </Link>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

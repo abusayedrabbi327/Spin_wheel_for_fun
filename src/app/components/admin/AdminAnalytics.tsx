@@ -14,20 +14,6 @@ import {
 } from "lucide-react";
 import { adminApi, type AdminStats } from "../../api";
 
-// Hardcoded fallback data for metrics not tracked by the backend yet
-const topCountries = [
-  { country: "United States", users: 423, pct: 34 },
-  { country: "United Kingdom", users: 187, pct: 15 },
-  { country: "Canada", users: 156, pct: 12.5 },
-  { country: "Others", users: 481, pct: 38.5 },
-];
-
-const deviceStats = [
-  { device: "Mobile", pct: 62, icon: Smartphone, color: "text-blue-500" },
-  { device: "Desktop", pct: 31, icon: Monitor, color: "text-salami-green" },
-  { device: "Tablet", pct: 7, icon: Monitor, color: "text-amber-500" },
-];
-
 const typeColorMap: Record<string, string> = {
   "Name Pick": "bg-blue-500",
   "Prize": "bg-salami-green",
@@ -173,7 +159,7 @@ export function AdminAnalytics() {
           </div>
         </motion.div>
 
-        {/* Device Breakdown */}
+        {/* Top Performing Wheels */}
         <motion.div
           className="bg-white rounded-2xl shadow-sm border border-border p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -182,36 +168,30 @@ export function AdminAnalytics() {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>
-              Device Breakdown
+              Top Performing Wheels
             </h2>
-            <span className="text-[0.625rem] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full font-medium">Demo</span>
+            <CircleDot className="w-5 h-5 text-muted-foreground" />
           </div>
-          <div className="space-y-5">
-            {deviceStats.map((d) => (
-              <div key={d.device}>
-                <div className="flex items-center justify-between mb-2">
+          <div className="space-y-4">
+            {stats.topWheels.length === 0 ? (
+              <div className="text-center text-muted-foreground py-4 text-sm">No wheel data yet.</div>
+            ) : stats.topWheels.map((wheel, index) => (
+              <div key={wheel.id}>
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <d.icon className={`w-4 h-4 ${d.color}`} />
-                    <span className="text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>
-                      {d.device}
+                    <span className="w-5 h-5 rounded flex items-center justify-center bg-gray-100 text-[0.6875rem] font-bold text-gray-500">
+                      {index + 1}
+                    </span>
+                    <span className="text-[0.875rem] text-foreground truncate max-w-[140px]" style={{ fontWeight: 500 }} title={wheel.title}>
+                      {wheel.title}
                     </span>
                   </div>
-                  <span className="text-[0.875rem] text-foreground" style={{ fontWeight: 600 }}>
-                    {d.pct}%
+                  <span className="text-[0.875rem] text-salami-green" style={{ fontWeight: 600 }}>
+                    {wheel.spins} spins
                   </span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${d.device === "Mobile"
-                        ? "bg-blue-500"
-                        : d.device === "Desktop"
-                          ? "bg-salami-green"
-                          : "bg-amber-500"
-                      }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${d.pct}%` }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                  />
+                <div className="ml-7 text-[0.75rem] text-muted-foreground">
+                  Owner: {wheel.owner}
                 </div>
               </div>
             ))}
@@ -257,7 +237,7 @@ export function AdminAnalytics() {
           </div>
         </motion.div>
 
-        {/* Top Countries */}
+        {/* Recent Wheel Creations */}
         <motion.div
           className="bg-white rounded-2xl shadow-sm border border-border p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -265,35 +245,50 @@ export function AdminAnalytics() {
           transition={{ delay: 0.6 }}
         >
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-muted-foreground" />
-              <h2 className="text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>
-                Top Countries
-              </h2>
-            </div>
-            <span className="text-[0.625rem] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full font-medium">Demo</span>
+            <h2 className="text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>
+              Recent Platform Activity
+            </h2>
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="space-y-3">
-            {topCountries.map((c, i) => (
-              <div key={c.country} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center text-[0.625rem] text-muted-foreground" style={{ fontWeight: 700 }}>
-                    {i + 1}
-                  </span>
-                  <span className="text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>
-                    {c.country}
-                  </span>
+            <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                  <Users className="w-4 h-4" />
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[0.75rem] text-muted-foreground">
-                    {c.users} users
-                  </span>
-                  <span className="text-[0.75rem] text-foreground w-12 text-right" style={{ fontWeight: 600 }}>
-                    {c.pct}%
-                  </span>
+                <div>
+                  <p className="text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>New Users Joined</p>
+                  <p className="text-[0.75rem] text-muted-foreground">Last 7 days</p>
                 </div>
               </div>
-            ))}
+              <span className="text-[1.125rem] text-blue-600 font-bold">+{stats.recent.users}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                  <CircleDot className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>Wheels Created</p>
+                  <p className="text-[0.75rem] text-muted-foreground">Last 7 days</p>
+                </div>
+              </div>
+              <span className="text-[1.125rem] text-amber-600 font-bold">+{stats.recent.wheels}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-salami-green/5 rounded-xl border border-salami-green/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-salami-green/20 flex items-center justify-center text-salami-green">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>Total Spins</p>
+                  <p className="text-[0.75rem] text-muted-foreground">Last 7 days</p>
+                </div>
+              </div>
+              <span className="text-[1.125rem] text-salami-green font-bold">+{stats.recent.spins}</span>
+            </div>
           </div>
         </motion.div>
       </div>
