@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../_lib/mongodb.js";
 import Wheel from "../_models/Wheel.js";
 import Spin from "../_models/Spin.js";
+import "../_models/User.js"; // Register schema for populate()
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, notFound, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
 import mongoose from "mongoose";
