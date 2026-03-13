@@ -178,8 +178,8 @@ export function DashboardHome() {
                       <td className="px-5 py-3.5">
                         <span
                           className={`inline-flex px-2.5 py-0.5 rounded-full text-[0.75rem] ${wheel.isActive
-                              ? "bg-salami-green-light text-salami-green"
-                              : "bg-gray-100 text-gray-500"
+                            ? "bg-salami-green-light text-salami-green"
+                            : "bg-gray-100 text-gray-500"
                             }`}
                           style={{ fontWeight: 500 }}
                         >
@@ -191,12 +191,12 @@ export function DashboardHome() {
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <Link
-                          to={`/spin/${wheel.slug}`}
+                          to={`/dashboard/campaign/${wheel.id}`}
                           className="inline-flex items-center gap-1 text-[0.875rem] text-salami-green hover:text-salami-green-dark"
                           style={{ fontWeight: 500 }}
                         >
                           <Eye className="w-4 h-4" />
-                          Open
+                          Details
                         </Link>
                       </td>
                     </tr>
@@ -209,7 +209,7 @@ export function DashboardHome() {
               {wheels.slice(0, 5).map((wheel) => (
                 <Link
                   key={wheel.id}
-                  to={`/spin/${wheel.slug}`}
+                  to={`/dashboard/campaign/${wheel.id}`}
                   className="block p-4 rounded-xl border border-border hover:border-salami-green/20 transition-all"
                 >
                   <div className="flex items-center justify-between mb-1">

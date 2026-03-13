@@ -198,9 +198,9 @@ export interface Spin {
   id: string;
   wheelId: string;
   result: string;
-  spinnerName: string | null;
-  spinnerEmail: string | null;
-  spunAt: string;
+  participantName: string;
+  participantPhone?: string;
+  createdAt: string;
 }
 
 export interface SpinsListResponse {

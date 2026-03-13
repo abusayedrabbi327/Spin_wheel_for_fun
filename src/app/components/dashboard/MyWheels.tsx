@@ -45,7 +45,7 @@ export function MyWheels() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this wheel?")) return;
-    
+
     setDeletingId(id);
     try {
       const result = await wheelsApi.delete(id);
@@ -136,18 +136,16 @@ export function MyWheels() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        wheel.isActive
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${wheel.isActive
                           ? "bg-salami-green-light"
                           : "bg-gray-100"
-                      }`}
+                        }`}
                     >
                       <CircleDot
-                        className={`w-5 h-5 ${
-                          wheel.isActive
+                        className={`w-5 h-5 ${wheel.isActive
                             ? "text-salami-green"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       />
                     </div>
                     <div>
@@ -155,18 +153,17 @@ export function MyWheels() {
                         {wheel.title}
                       </h3>
                       <span
-                        className={`inline-flex text-[0.75rem] ${
-                          wheel.isActive
+                        className={`inline-flex text-[0.75rem] ${wheel.isActive
                             ? "text-salami-green"
                             : "text-gray-400"
-                        }`}
+                          }`}
                         style={{ fontWeight: 500 }}
                       >
                         {wheel.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleDelete(wheel.id)}
                     disabled={deletingId === wheel.id}
                     className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
@@ -201,7 +198,7 @@ export function MyWheels() {
                   <div className="text-center p-2 rounded-lg bg-input-background">
                     <Clock className="w-4 h-4 text-muted-foreground mx-auto mb-1" />
                     <div className="text-foreground text-[0.75rem]" style={{ fontWeight: 600 }}>
-                      {wheel.expiryDate 
+                      {wheel.expiryDate
                         ? formatDate(wheel.expiryDate).split(",")[0]
                         : "∞"
                       }
@@ -222,13 +219,12 @@ export function MyWheels() {
                     Copy Link
                   </button>
                   <Link
-                    to={`/spin/${wheel.slug}`}
-                    target="_blank"
+                    to={`/dashboard/campaign/${wheel.id}`}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-salami-green text-white rounded-xl text-[0.875rem] hover:bg-salami-green-dark transition-all"
                     style={{ fontWeight: 500 }}
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Open
+                    <Eye className="w-4 h-4" />
+                    Details
                   </Link>
                 </div>
               </div>
