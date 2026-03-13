@@ -11,6 +11,7 @@ import {
   Zap,
   Target,
 } from "lucide-react";
+import { isAuthenticated, getAuthState } from "../../auth";
 
 const features = [
   {
@@ -156,6 +157,10 @@ function SpinWheelIllustration() {
 }
 
 export function LandingPage() {
+  const isAuth = isAuthenticated();
+  const isAdminUser = getAuthState()?.role === "admin" || (getAuthState()?.role as string) === "ADMIN";
+  const dashboardLink = isAdminUser ? "/admin" : "/dashboard";
+
   return (
     <div
       className="min-h-screen bg-white font-['Inter',sans-serif]"
@@ -176,18 +181,29 @@ export function LandingPage() {
             </span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="px-4 py-2 text-salami-green hover:bg-salami-green-light rounded-xl transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="px-5 py-2 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-colors shadow-sm"
-            >
-              Get Started
-            </Link>
+            {isAuth ? (
+              <Link
+                to={dashboardLink}
+                className="px-5 py-2 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-colors shadow-sm"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-salami-green hover:bg-salami-green-light rounded-xl transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-5 py-2 bg-salami-green text-white rounded-xl hover:bg-salami-green-dark transition-colors shadow-sm"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -217,18 +233,20 @@ export function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
-                to="/dashboard/create"
+                to={isAuth ? "/dashboard/create" : "/register"}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-salami-green text-white rounded-2xl hover:bg-salami-green-dark transition-all shadow-lg shadow-salami-green/25 hover:shadow-salami-green/40"
               >
                 Create a Wheel
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-salami-green text-salami-green rounded-2xl hover:bg-salami-green-light transition-all"
-              >
-                Login
-              </Link>
+              {!isAuth && (
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-salami-green text-salami-green rounded-2xl hover:bg-salami-green-light transition-all"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </motion.div>
 
@@ -377,11 +395,11 @@ export function LandingPage() {
                 your next iftar or community event.
               </p>
               <Link
-                to="/register"
+                to={isAuth ? dashboardLink : "/register"}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-salami-green rounded-2xl hover:bg-salami-gold hover:text-white transition-all shadow-lg"
                 style={{ fontWeight: 600 }}
               >
-                Get Started Free
+                {isAuth ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
