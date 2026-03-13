@@ -39,14 +39,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ]);
 
       const usersWithWheelCount = await Promise.all(
-        users.map(async (u) => ({
-          id: u._id.toString(),
-          email: u.email,
-          name: u.name,
-          role: u.role,
-          createdAt: u.createdAt,
-          wheelCount: await Wheel.countDocuments({ userId: u._id }),
-        }))
+        users.map(async (u) => {
+          const userWheels = await Wheel.find({ userId: u._id }).select("_id").lean();
+          const wheelIds = userWheels.map((w) => w._id);
+          const totalSpins = await Spin.countDocuments({ wheelId: { $in: wheelIds } });
+
+          return {
+            id: u._id.toString(),
+            email: u.email,
+            name: u.name,
+            role: u.role,
+            createdAt: u.createdAt,
+            wheelCount: wheelIds.length,
+            totalSpins,
+          };
+        })
       );
 
       return success(res, { users: usersWithWheelCount, total, limit: take, offset: skip });

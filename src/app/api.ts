@@ -246,11 +246,41 @@ export interface AdminStats {
     slug: string;
     owner: string;
     spins: number;
+    isActive: boolean;
+  }[];
+  wheelTypes?: {
+    type: string;
+    count: number;
   }[];
 }
 
 export interface AdminUser extends User {
   wheelCount: number;
+  totalSpins: number;
+}
+
+export interface AdminWheel {
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  isActive: boolean;
+  itemCount: number;
+  allowBetterLuck: boolean;
+  createdAt: string;
+  totalSpins: number;
+  owner: {
+    _id: string;
+    name: string | null;
+    email: string;
+  } | null;
+}
+
+export interface AdminWheelsResponse {
+  wheels: AdminWheel[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface AdminUsersResponse {
@@ -274,6 +304,17 @@ export const adminApi = {
       ...(search && { search }),
     });
     return apiRequest<AdminUsersResponse>(`/admin/users?${params}`);
+  },
+
+  // Get all wheels
+  getWheels: async (limit = 20, offset = 0, search?: string, status = "All") => {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+      ...(search && { search }),
+      ...(status && status !== "All" && { status }),
+    });
+    return apiRequest<AdminWheelsResponse>(`/admin/wheels?${params}`);
   },
 
   // Update user role

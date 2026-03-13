@@ -35,6 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       recentSpins,
       spinsByDay,
       topWheels,
+      wheelTypes,
     ] = await Promise.all([
       User.countDocuments(),
       Wheel.countDocuments(),
@@ -80,6 +81,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
         { $unwind: { path: "$owner", preserveNullAndEmptyArrays: true } },
       ]),
+
+      // Wheel types distribution
+      Wheel.aggregate([
+        { $group: { _id: "$type", count: { $sum: 1 } } },
+      ]),
     ]);
 
     const spinsPerDay: Record<string, number> = {};
@@ -97,6 +103,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         slug: entry.wheel.slug,
         owner: entry.owner?.name || entry.owner?.email || "Unknown",
         spins: entry.spinCount,
+        isActive: entry.wheel.isActive,
+      })),
+      wheelTypes: wheelTypes.map((type: any) => ({
+        type: type._id || "Unknown",
+        count: type.count,
       })),
     });
   } catch (err) {

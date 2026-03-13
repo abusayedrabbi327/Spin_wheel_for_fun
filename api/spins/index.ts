@@ -64,8 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const wheel = await Wheel.findById(wheelIdStr);
       if (!wheel) return notFound(res, "Wheel not found");
-      if (wheel.userId.toString() !== user.userId)
+      if (wheel.userId.toString() !== user.userId && user.role?.toUpperCase() !== "ADMIN") {
         return res.status(401).json({ error: "You don't own this wheel" });
+      }
 
       const take = limit ? parseInt(Array.isArray(limit) ? limit[0] : limit) : 50;
       const skip = offset ? parseInt(Array.isArray(offset) ? offset[0] : offset) : 0;

@@ -32,7 +32,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!wheel.isActive) {
         const user = getUserFromRequest(req);
-        if (!user || user.userId !== wheel.userId.toString()) return notFound(res, "Wheel not found");
+        if (!user || (user.userId !== wheel.userId.toString() && user.role?.toUpperCase() !== "ADMIN")) {
+          return notFound(res, "Wheel not found");
+        }
       }
 
       const spinCount = await Spin.countDocuments({ wheelId: wheel._id });
