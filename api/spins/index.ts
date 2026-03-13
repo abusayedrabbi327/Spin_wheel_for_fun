@@ -1,119 +1,82 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma.js";
+import connectDB from "../_lib/mongodb.js";
+import Wheel from "../models/Wheel.js";
+import Spin from "../models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, notFound, methodNotAllowed, serverError } from "../_lib/utils.js";
+import mongoose from "mongoose";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
+    await connectDB();
+
     // POST - Record a new spin
     if (req.method === "POST") {
       const { wheelId, result, spinnerName, spinnerEmail, participantName, participantPhone } = req.body;
 
-      if (!wheelId) {
-        return error(res, "Wheel ID is required");
-      }
+      if (!wheelId) return error(res, "Wheel ID is required");
+      if (!result) return error(res, "Spin result is required");
+      if (!mongoose.Types.ObjectId.isValid(wheelId)) return notFound(res, "Wheel not found");
 
-      if (!result) {
-        return error(res, "Spin result is required");
-      }
-
-      // Verify wheel exists and is active
-      const wheel = await prisma.wheel.findUnique({
-        where: { id: wheelId },
-      });
-
-      if (!wheel) {
-        return notFound(res, "Wheel not found");
-      }
-
-      if (!wheel.isActive) {
-        return error(res, "This wheel is no longer active");
-      }
-
-      // Check expiry
-      if (wheel.expiryDate && new Date(wheel.expiryDate) < new Date()) {
+      const wheel = await Wheel.findById(wheelId);
+      if (!wheel) return notFound(res, "Wheel not found");
+      if (!wheel.isActive) return error(res, "This wheel is no longer active");
+      if (wheel.expiryDate && new Date(wheel.expiryDate) < new Date())
         return error(res, "This wheel has expired");
-      }
 
-      // Check max spins
       if (wheel.maxSpins) {
-        const spinCount = await prisma.spin.count({
-          where: { wheelId: wheel.id },
-        });
-
-        if (spinCount >= wheel.maxSpins) {
+        const spinCount = await Spin.countDocuments({ wheelId: wheel._id });
+        if (spinCount >= wheel.maxSpins)
           return error(res, "This wheel has reached its maximum number of spins");
-        }
       }
 
-      // Create spin record
-      const spin = await prisma.spin.create({
-        data: {
-          wheelId,
-          result,
-          participantName: participantName || spinnerName || "Anonymous",
-          participantPhone: participantPhone || spinnerEmail || null,
-        },
+      const spin = await Spin.create({
+        wheelId: wheel._id,
+        result,
+        participantName: participantName || spinnerName || "Anonymous",
+        participantPhone: participantPhone || spinnerEmail || undefined,
       });
 
-      return success(res, spin, 201);
+      return success(res, {
+        ...spin.toObject(),
+        id: spin._id.toString(),
+        wheelId: spin.wheelId.toString(),
+      }, 201);
     }
 
     // GET - Get spins for a wheel (owner only)
     if (req.method === "GET") {
       const user = getUserFromRequest(req);
-      if (!user) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
+      if (!user) return res.status(401).json({ error: "Unauthorized" });
 
       const { wheelId, limit, offset } = req.query;
-
-      if (!wheelId) {
-        return error(res, "Wheel ID is required");
-      }
+      if (!wheelId) return error(res, "Wheel ID is required");
 
       const wheelIdStr = Array.isArray(wheelId) ? wheelId[0] : wheelId;
+      if (!mongoose.Types.ObjectId.isValid(wheelIdStr)) return notFound(res, "Wheel not found");
 
-      // Verify ownership
-      const wheel = await prisma.wheel.findUnique({
-        where: { id: wheelIdStr },
-      });
-
-      if (!wheel) {
-        return notFound(res, "Wheel not found");
-      }
-
-      if (wheel.userId !== user.userId) {
+      const wheel = await Wheel.findById(wheelIdStr);
+      if (!wheel) return notFound(res, "Wheel not found");
+      if (wheel.userId.toString() !== user.userId)
         return res.status(401).json({ error: "You don't own this wheel" });
-      }
 
       const take = limit ? parseInt(Array.isArray(limit) ? limit[0] : limit) : 50;
       const skip = offset ? parseInt(Array.isArray(offset) ? offset[0] : offset) : 0;
 
       const [spins, total] = await Promise.all([
-        prisma.spin.findMany({
-          where: { wheelId: wheelIdStr },
-          orderBy: { createdAt: "desc" },
-          take,
-          skip,
-        }),
-        prisma.spin.count({
-          where: { wheelId: wheelIdStr },
-        }),
+        Spin.find({ wheelId: wheelIdStr }).sort({ createdAt: -1 }).limit(take).skip(skip).lean(),
+        Spin.countDocuments({ wheelId: wheelIdStr }),
       ]);
 
       return success(res, {
-        spins,
+        spins: spins.map((s) => ({ ...s, id: s._id.toString(), wheelId: s.wheelId.toString() })),
         total,
         limit: take,
         offset: skip,

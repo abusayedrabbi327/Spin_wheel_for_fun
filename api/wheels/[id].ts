@@ -1,143 +1,106 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma.js";
+import connectDB from "../_lib/mongodb.js";
+import Wheel from "../models/Wheel.js";
+import Spin from "../models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, notFound, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
+import mongoose from "mongoose";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   const { id } = req.query;
   const wheelId = Array.isArray(id) ? id[0] : id;
 
-  if (!wheelId) {
-    return error(res, "Wheel ID is required");
-  }
+  if (!wheelId) return error(res, "Wheel ID is required");
+
+  // Validate MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(wheelId)) return notFound(res, "Wheel not found");
 
   try {
-    // GET - Get wheel by ID (public or owner)
+    await connectDB();
+
+    // GET - Get wheel by ID
     if (req.method === "GET") {
-      const wheel = await prisma.wheel.findUnique({
-        where: { id: wheelId },
-        include: {
-          items: {
-            orderBy: { order: "asc" },
-          },
-          user: {
-            select: { id: true, name: true },
-          },
-          _count: {
-            select: { spins: true },
-          },
-        },
-      });
+      const wheel = await Wheel.findById(wheelId).populate("userId", "id name").lean();
+      if (!wheel) return notFound(res, "Wheel not found");
 
-      if (!wheel) {
-        return notFound(res, "Wheel not found");
-      }
-
-      // Check if wheel is active
       if (!wheel.isActive) {
         const user = getUserFromRequest(req);
-        if (!user || user.userId !== wheel.userId) {
-          return notFound(res, "Wheel not found");
-        }
+        if (!user || user.userId !== wheel.userId.toString()) return notFound(res, "Wheel not found");
       }
 
-      return success(res, wheel);
+      const spinCount = await Spin.countDocuments({ wheelId: wheel._id });
+      const owner = wheel.userId as any;
+
+      return success(res, {
+        ...wheel,
+        id: wheel._id.toString(),
+        userId: owner?._id?.toString() || wheel.userId.toString(),
+        user: owner ? { id: owner._id?.toString(), name: owner.name } : null,
+        items: wheel.items
+          .sort((a, b) => a.order - b.order)
+          .map((item) => ({ ...item, id: item._id?.toString() })),
+        _count: { spins: spinCount },
+      });
     }
 
     // PUT - Update wheel (owner only)
     if (req.method === "PUT") {
       const user = getUserFromRequest(req);
-      if (!user) {
-        return unauthorized(res);
-      }
+      if (!user) return unauthorized(res);
 
-      const wheel = await prisma.wheel.findUnique({
-        where: { id: wheelId },
-      });
-
-      if (!wheel) {
-        return notFound(res, "Wheel not found");
-      }
-
-      if (wheel.userId !== user.userId) {
-        return unauthorized(res, "You don't own this wheel");
-      }
+      const wheel = await Wheel.findById(wheelId);
+      if (!wheel) return notFound(res, "Wheel not found");
+      if (wheel.userId.toString() !== user.userId) return unauthorized(res, "You don't own this wheel");
 
       const { title, type, maxSpins, expiryDate, allowBetterLuck, isActive, items } = req.body;
 
-      // Update wheel with items
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updatedWheel = await prisma.$transaction(async (tx: any) => {
-        // Delete existing items if new items provided
-        if (items && Array.isArray(items)) {
-          await tx.wheelItem.deleteMany({
-            where: { wheelId },
-          });
-        }
+      if (title !== undefined) wheel.title = title;
+      if (type !== undefined) wheel.type = type;
+      if (maxSpins !== undefined) wheel.maxSpins = maxSpins ? parseInt(maxSpins) : undefined;
+      if (expiryDate !== undefined) wheel.expiryDate = expiryDate ? new Date(expiryDate) : undefined;
+      if (allowBetterLuck !== undefined) wheel.allowBetterLuck = allowBetterLuck;
+      if (isActive !== undefined) wheel.isActive = isActive;
 
-        return tx.wheel.update({
-          where: { id: wheelId },
-          data: {
-            title: title ?? wheel.title,
-            type: type ?? wheel.type,
-            maxSpins: maxSpins !== undefined ? (maxSpins ? parseInt(maxSpins) : null) : wheel.maxSpins,
-            expiryDate: expiryDate !== undefined ? (expiryDate ? new Date(expiryDate) : null) : wheel.expiryDate,
-            allowBetterLuck: allowBetterLuck ?? wheel.allowBetterLuck,
-            isActive: isActive ?? wheel.isActive,
-            items: items && Array.isArray(items)
-              ? {
-                  create: items.map((item: { label: string; value?: string }, index: number) => ({
-                    label: item.label,
-                    value: item.value || null,
-                    order: index,
-                  })),
-                }
-              : undefined,
-          },
-          include: {
-            items: {
-              orderBy: { order: "asc" },
-            },
-          },
-        });
+      // Replace items entirely if new ones provided
+      if (items && Array.isArray(items)) {
+        wheel.items = items.map((item: { label: string; value?: string }, index: number) => ({
+          label: item.label,
+          value: item.value || undefined,
+          order: index,
+        })) as any;
+      }
+
+      await wheel.save();
+
+      return success(res, {
+        ...wheel.toObject(),
+        id: wheel._id.toString(),
+        userId: wheel.userId.toString(),
+        items: wheel.items.map((item: any) => ({ ...item.toObject(), id: item._id?.toString() })),
       });
-
-      return success(res, updatedWheel);
     }
 
     // DELETE - Delete wheel (owner only)
     if (req.method === "DELETE") {
       const user = getUserFromRequest(req);
-      if (!user) {
-        return unauthorized(res);
-      }
+      if (!user) return unauthorized(res);
 
-      const wheel = await prisma.wheel.findUnique({
-        where: { id: wheelId },
-      });
+      const wheel = await Wheel.findById(wheelId);
+      if (!wheel) return notFound(res, "Wheel not found");
+      if (wheel.userId.toString() !== user.userId) return unauthorized(res, "You don't own this wheel");
 
-      if (!wheel) {
-        return notFound(res, "Wheel not found");
-      }
-
-      if (wheel.userId !== user.userId) {
-        return unauthorized(res, "You don't own this wheel");
-      }
-
-      // Delete wheel (cascade deletes items and spins)
-      await prisma.wheel.delete({
-        where: { id: wheelId },
-      });
+      // Delete wheel and all associated spins
+      await Promise.all([
+        Wheel.findByIdAndDelete(wheelId),
+        Spin.deleteMany({ wheelId }),
+      ]);
 
       return success(res, { message: "Wheel deleted successfully" });
     }

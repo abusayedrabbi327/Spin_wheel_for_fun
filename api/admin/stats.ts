@@ -1,35 +1,30 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import prisma from "../_lib/prisma.js";
+import connectDB from "../_lib/mongodb.js";
+import User from "../models/User.js";
+import Wheel from "../models/Wheel.js";
+import Spin from "../models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "GET") {
-    return methodNotAllowed(res);
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "GET") return methodNotAllowed(res);
 
   const user = getUserFromRequest(req);
-  if (!user || user.role !== "ADMIN") {
-    return unauthorized(res, "Admin access required");
-  }
+  if (!user || user.role !== "ADMIN") return unauthorized(res, "Admin access required");
 
   try {
-    // Get date range for analytics
+    await connectDB();
+
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Parallel queries for efficiency
     const [
       totalUsers,
       totalWheels,
@@ -41,71 +36,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       spinsByDay,
       topWheels,
     ] = await Promise.all([
-      // Total counts
-      prisma.user.count(),
-      prisma.wheel.count(),
-      prisma.spin.count(),
-      prisma.wheel.count({ where: { isActive: true } }),
+      User.countDocuments(),
+      Wheel.countDocuments(),
+      Spin.countDocuments(),
+      Wheel.countDocuments({ isActive: true }),
 
-      // Recent counts (last 7 days)
-      prisma.user.count({
-        where: { createdAt: { gte: sevenDaysAgo } },
-      }),
-      prisma.wheel.count({
-        where: { createdAt: { gte: sevenDaysAgo } },
-      }),
-      prisma.spin.count({
-        where: { createdAt: { gte: sevenDaysAgo } },
-      }),
+      User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
+      Wheel.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
+      Spin.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
 
-      // Spins per day (last 30 days)
-      prisma.spin.groupBy({
-        by: ["createdAt"],
-        where: {
-          createdAt: { gte: thirtyDaysAgo },
+      // Aggregate spins per day over last 30 days
+      Spin.aggregate([
+        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 },
+          },
         },
-        _count: true,
-      }),
+      ]),
 
       // Top 5 wheels by spin count
-      prisma.wheel.findMany({
-        take: 5,
-        include: {
-          user: { select: { name: true, email: true } },
-          _count: { select: { spins: true } },
+      Spin.aggregate([
+        { $group: { _id: "$wheelId", spinCount: { $sum: 1 } } },
+        { $sort: { spinCount: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "wheels",
+            localField: "_id",
+            foreignField: "_id",
+            as: "wheel",
+          },
         },
-        orderBy: {
-          spins: { _count: "desc" },
+        { $unwind: "$wheel" },
+        {
+          $lookup: {
+            from: "users",
+            localField: "wheel.userId",
+            foreignField: "_id",
+            as: "owner",
+          },
         },
-      }),
+        { $unwind: { path: "$owner", preserveNullAndEmptyArrays: true } },
+      ]),
     ]);
 
-    // Process spins by day into a simpler format
     const spinsPerDay: Record<string, number> = {};
-    spinsByDay.forEach((entry: { createdAt: Date; _count: number }) => {
-      const date = new Date(entry.createdAt).toISOString().split("T")[0];
-      spinsPerDay[date] = (spinsPerDay[date] || 0) + entry._count;
+    spinsByDay.forEach((entry: { _id: string; count: number }) => {
+      spinsPerDay[entry._id] = entry.count;
     });
 
     return success(res, {
-      overview: {
-        totalUsers,
-        totalWheels,
-        totalSpins,
-        activeWheels,
-      },
-      recent: {
-        users: recentUsers,
-        wheels: recentWheels,
-        spins: recentSpins,
-      },
+      overview: { totalUsers, totalWheels, totalSpins, activeWheels },
+      recent: { users: recentUsers, wheels: recentWheels, spins: recentSpins },
       spinsPerDay,
-      topWheels: topWheels.map((w: { id: string; title: string; slug: string; user?: { name?: string; email: string } | null; _count: { spins: number } }) => ({
-        id: w.id,
-        title: w.title,
-        slug: w.slug,
-        owner: w.user?.name || w.user?.email || "Unknown",
-        spins: w._count.spins,
+      topWheels: topWheels.map((entry: any) => ({
+        id: entry.wheel._id.toString(),
+        title: entry.wheel.title,
+        slug: entry.wheel.slug,
+        owner: entry.owner?.name || entry.owner?.email || "Unknown",
+        spins: entry.spinCount,
       })),
     });
   } catch (err) {
