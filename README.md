@@ -5,8 +5,8 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 ![React](https://img.shields.io/badge/React-18.3.1-blue?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-6.3.5-purple?logo=vite)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan?logo=tailwindcss)
-![Prisma](https://img.shields.io/badge/Prisma-7.4-green?logo=prisma)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue?logo=postgresql)
+![Mongoose](https://img.shields.io/badge/Mongoose-9.3-red?logo=mongodb)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb)
 
 ## ✨ Features
 
@@ -49,8 +49,8 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 
 ### Backend
 - **Vercel Serverless Functions** - API routes
-- **Prisma ORM** - Database abstraction
-- **Neon PostgreSQL** - Serverless database
+- **Mongoose ODM** - MongoDB object modeling
+- **MongoDB** - NoSQL database
 - **JWT** - Authentication tokens
 - **bcryptjs** - Password hashing
 
@@ -60,15 +60,15 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 ├── api/                    # Vercel serverless API routes
 │   ├── _lib/              # Shared utilities
 │   │   ├── auth.ts        # JWT authentication
-│   │   ├── prisma.ts      # Database client
+│   │   ├── mongodb.ts     # Database client connection
 │   │   └── utils.ts       # Helper functions
+│   ├── models/            # Mongoose Schemas
 │   ├── admin/             # Admin endpoints
 │   ├── auth/              # Authentication endpoints
 │   ├── spins/             # Spin tracking
 │   └── wheels/            # Wheel CRUD operations
-├── prisma/
-│   ├── schema.prisma      # Database schema
-│   └── seed.ts            # Database seeding
+├── scripts/
+│   └── seed.ts            # Database initialization script
 ├── src/
 │   ├── app/
 │   │   ├── components/    # React components
@@ -92,7 +92,7 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 ### Prerequisites
 - Node.js 18+
 - npm or pnpm
-- Neon PostgreSQL account (free tier available)
+- MongoDB Atlas account (free tier available)
 
 ### Installation
 
@@ -111,9 +111,8 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
    
    Create a `.env` file in the root directory:
    ```env
-   # Database (get from https://console.neon.tech)
-   DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
-   DIRECT_URL="postgresql://user:password@host/database?sslmode=require"
+   # Database Connection String
+   MONGODB_URI="mongodb+srv://admin:password@cluster.mongodb.net/spinwheel"
    
    # JWT Secret (generate a random 32+ character string)
    JWT_SECRET="your-secret-key-here"
@@ -125,13 +124,7 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 
 4. **Set up the database**
    ```bash
-   # Push schema to database
-   npx prisma db push
-   
-   # Generate Prisma client
-   npx prisma generate
-   
-   # Seed admin user
+   # Seed database with the default admin user account
    npm run db:seed
    ```
 
@@ -148,11 +141,7 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 |---------|-------------|
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:push` | Push schema to database |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:seed` | Seed database with initial data |
-| `npm run db:studio` | Open Prisma Studio |
+| `npm run db:seed` | Seed database with initial admin data |
 
 ## 🌐 API Endpoints
 
@@ -194,7 +183,7 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 1. Push your code to GitHub
 2. Import repository on [Vercel](https://vercel.com/new)
 3. Add environment variables in Vercel dashboard:
-   - `DATABASE_URL`
+   - `MONGODB_URI`
    - `JWT_SECRET`
 4. Deploy!
 

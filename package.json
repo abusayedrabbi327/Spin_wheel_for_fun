@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vercel dev",
-    "dev:ui": "vite",
+    "dev": "vite",
     "db:seed": "npx tsx scripts/seed.ts"
   },
   "dependencies": {

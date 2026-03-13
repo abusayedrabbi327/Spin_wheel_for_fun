@@ -20,6 +20,9 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
+    }).catch((err) => {
+      cached.promise = null; // Important: Clear cache so next request retries
+      throw err;
     });
   }
 
