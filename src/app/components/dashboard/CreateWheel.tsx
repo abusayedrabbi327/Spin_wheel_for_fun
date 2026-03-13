@@ -228,7 +228,7 @@ export function CreateWheel() {
 
   // Get current wheel type config
   const currentTypeConfig = WHEEL_TYPES.find((t) => t.id === wheelType) || WHEEL_TYPES[0];
-  
+
   // Get templates filtered by current wheel type
   const filteredTemplates = TEMPLATES.filter((t) => t.types.includes(wheelType));
 
@@ -406,7 +406,7 @@ export function CreateWheel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const filledItems = items.filter((p) => p.label.trim());
     if (filledItems.length < 2) {
       toast.error("Please add at least 2 items to the wheel");
@@ -421,11 +421,20 @@ export function CreateWheel() {
     setIsSubmitting(true);
 
     try {
+      // Set expiry to the end of the selected day (local time)
+      let finalExpiryDate: string | undefined = undefined;
+      if (expiryDate) {
+        const d = new Date(expiryDate);
+        // Add 23 hours, 59 mins, 59 secs to make it expire at the END of the selected day
+        d.setHours(23, 59, 59, 999);
+        finalExpiryDate = d.toISOString();
+      }
+
       const result = await wheelsApi.create({
         title: title.trim(),
         type: wheelType.toUpperCase(),
         maxSpins: maxWinners ? parseInt(maxWinners) : undefined,
-        expiryDate: expiryDate || undefined,
+        expiryDate: finalExpiryDate,
         allowBetterLuck,
         items: filledItems.map((item) => ({
           label: item.label.trim(),
@@ -509,23 +518,20 @@ export function CreateWheel() {
                     key={type.id}
                     type="button"
                     onClick={() => setWheelType(type.id)}
-                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
-                      isSelected
+                    className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${isSelected
                         ? "border-salami-green bg-salami-green-light"
                         : "border-border hover:border-salami-green/50 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                        isSelected ? "bg-salami-green text-white" : "bg-gray-100 text-gray-500"
-                      }`}
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isSelected ? "bg-salami-green text-white" : "bg-gray-100 text-gray-500"
+                        }`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
                     <span
-                      className={`text-[0.8125rem] transition-colors ${
-                        isSelected ? "text-salami-green" : "text-foreground"
-                      }`}
+                      className={`text-[0.8125rem] transition-colors ${isSelected ? "text-salami-green" : "text-foreground"
+                        }`}
                       style={{ fontWeight: isSelected ? 600 : 500 }}
                     >
                       {type.label}
@@ -584,8 +590,8 @@ export function CreateWheel() {
               <currentTypeConfig.icon className="w-5 h-5" style={{ color: currentTypeConfig.colors[0] }} />
               Wheel Items
               {filledCount > 0 && (
-                <span 
-                  className="ml-1 text-[0.75rem] px-2 py-0.5 rounded-full" 
+                <span
+                  className="ml-1 text-[0.75rem] px-2 py-0.5 rounded-full"
                   style={{ fontWeight: 600, backgroundColor: `${currentTypeConfig.colors[0]}20`, color: currentTypeConfig.colors[0] }}
                 >
                   {filledCount}
@@ -686,11 +692,10 @@ export function CreateWheel() {
                 key={tab.mode}
                 type="button"
                 onClick={() => setInputMode(tab.mode)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[0.8125rem] transition-all ${
-                  inputMode === tab.mode
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[0.8125rem] transition-all ${inputMode === tab.mode
                     ? "bg-white text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
                 style={{ fontWeight: inputMode === tab.mode ? 600 : 400 }}
               >
                 <tab.icon className="w-4 h-4" />
@@ -740,8 +745,8 @@ export function CreateWheel() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: Math.min(index * 0.02, 0.5) }}
                   >
-                    <div 
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[0.6875rem] sm:text-[0.75rem] shrink-0" 
+                    <div
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[0.6875rem] sm:text-[0.75rem] shrink-0"
                       style={{ fontWeight: 600, backgroundColor: `${currentTypeConfig.colors[0]}15`, color: currentTypeConfig.colors[0] }}
                     >
                       {index + 1}
@@ -891,15 +896,13 @@ export function CreateWheel() {
                   onDragLeave={() => setIsDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex flex-col items-center justify-center gap-3 p-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
-                    isDragOver
+                  className={`flex flex-col items-center justify-center gap-3 p-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${isDragOver
                       ? "border-salami-green bg-salami-green-light/40 scale-[1.01]"
                       : "border-border hover:border-salami-green/50 hover:bg-salami-green-light/10"
-                  }`}
+                    }`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${
-                    isDragOver ? "bg-salami-green/10" : "bg-gray-100"
-                  }`}>
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${isDragOver ? "bg-salami-green/10" : "bg-gray-100"
+                    }`}>
                     <Upload className={`w-7 h-7 ${isDragOver ? "text-salami-green" : "text-muted-foreground"}`} />
                   </div>
                   <div className="text-center">
@@ -950,14 +953,12 @@ export function CreateWheel() {
             <button
               type="button"
               onClick={() => setAllowBetterLuck(!allowBetterLuck)}
-              className={`relative w-12 h-7 rounded-full transition-colors ${
-                allowBetterLuck ? "bg-salami-green" : "bg-gray-300"
-              }`}
+              className={`relative w-12 h-7 rounded-full transition-colors ${allowBetterLuck ? "bg-salami-green" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${
-                  allowBetterLuck ? "left-[22px]" : "left-0.5"
-                }`}
+                className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${allowBetterLuck ? "left-[22px]" : "left-0.5"
+                  }`}
               />
             </button>
           </div>
