@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../../_lib/mongodb.js";
-import Wheel from "../../models/Wheel.js";
-import Spin from "../../models/Spin.js";
-import "../../models/User.js"; // Import User to register the schema for populate()
+import Wheel from "../../_models/Wheel.js";
+import Spin from "../../_models/Spin.js";
+import "../../_models/User.js"; // Import User to register the schema for populate()
 import { success, notFound, serverError } from "../../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

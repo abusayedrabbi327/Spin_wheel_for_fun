@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../_lib/mongodb.js";
-import User from "../models/User.js";
+import User from "../_models/User.js";
 import { hashPassword, generateToken } from "../_lib/auth.js";
 import { success, error, methodNotAllowed, serverError } from "../_lib/utils.js";
 

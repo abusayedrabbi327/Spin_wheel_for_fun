@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../_lib/mongodb.js";
-import Wheel from "../models/Wheel.js";
-import Spin from "../models/Spin.js";
+import Wheel from "../_models/Wheel.js";
+import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, notFound, methodNotAllowed, serverError } from "../_lib/utils.js";
 import mongoose from "mongoose";
