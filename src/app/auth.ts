@@ -42,28 +42,28 @@ export function setAuthState(state: AuthState): void {
 export function login(email: string, password: string): { success: boolean; role: UserRole } {
   // Check if admin
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    const state: AuthState = { 
-      isAuthenticated: true, 
-      role: "admin", 
+    const state: AuthState = {
+      isAuthenticated: true,
+      role: "admin",
       email,
       user: { email, name: "Admin" }
     };
     localStorage.setItem(AUTH_KEY, JSON.stringify(state));
     return { success: true, role: "admin" };
   }
-  
+
   // Regular user - accept any credentials for demo
   if (email && password) {
-    const state: AuthState = { 
-      isAuthenticated: true, 
-      role: "user", 
+    const state: AuthState = {
+      isAuthenticated: true,
+      role: "user",
       email,
       user: { email, name: email.split("@")[0] }
     };
     localStorage.setItem(AUTH_KEY, JSON.stringify(state));
     return { success: true, role: "user" };
   }
-  
+
   return { success: false, role: null };
 }
 
@@ -72,9 +72,11 @@ export function logout(): void {
 }
 
 export function isAdmin(): boolean {
-  return getAuthState().role === "admin";
+  const role = getAuthState().role;
+  return role === "admin" || (role as string) === "ADMIN";
 }
 
 export function isAuthenticated(): boolean {
-  return getAuthState().isAuthenticated;
+  const state = getAuthState();
+  return state.isAuthenticated === true;
 }

@@ -14,7 +14,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isAdmin, logout } from "../../auth";
+import { isAdmin, logout, getAuthState } from "../../auth";
 
 const navItems = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard },
@@ -28,6 +28,10 @@ export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const authState = getAuthState();
+  const adminName = authState?.user?.name || authState?.email?.split("@")[0] || "Admin";
+  const adminInitials = adminName.slice(0, 2).toUpperCase();
 
   // Protect admin routes - redirect if not admin
   useEffect(() => {
@@ -54,9 +58,8 @@ export function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1a1a2e] flex flex-col transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1a1a2e] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         <div className="p-5 flex items-center justify-between border-b border-white/10">
           <Link to="/admin" className="flex items-center gap-2.5">
@@ -91,11 +94,10 @@ export function AdminLayout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
-                  isActive
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive
                     ? "bg-white/10 text-white"
                     : "text-white/50 hover:bg-white/5 hover:text-white/80"
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="text-[0.875rem]" style={{ fontWeight: 500 }}>{item.label}</span>
@@ -143,10 +145,10 @@ export function AdminLayout() {
               </button>
               <div className="flex items-center gap-2 cursor-pointer">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-[0.75rem]" style={{ fontWeight: 600 }}>
-                  SA
+                  {adminInitials}
                 </div>
                 <span className="hidden md:block text-[0.875rem] text-foreground" style={{ fontWeight: 500 }}>
-                  Super Admin
+                  {adminName}
                 </span>
                 <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
               </div>

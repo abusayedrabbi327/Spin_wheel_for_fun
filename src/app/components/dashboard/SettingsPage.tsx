@@ -1,16 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { User, Mail, Lock, Bell, Save } from "lucide-react";
+import { User, Mail, Lock, Bell, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { getAuthState, setAuthState } from "../../auth";
+import { authApi } from "../../api";
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export function SettingsPage() {
-  const [name, setName] = useState("Ahmed Hassan");
-  const [email, setEmail] = useState("ahmed@example.com");
+  const authState = getAuthState();
+  const storedName = authState?.user?.name || authState?.email?.split("@")[0] || "";
+  const storedEmail = authState?.user?.email || authState?.email || "";
+
+  const [name, setName] = useState(storedName);
+  const [email, setEmail] = useState(storedEmail);
+  const [memberSince, setMemberSince] = useState<string | null>(null);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [spinNotifications, setSpinNotifications] = useState(true);
 
+  const initials = getInitials(name || email.split("@")[0] || "U");
+
+  useEffect(() => {
+    // Fetch fresh user data from API to ensure up to date
+    authApi.me().then((result) => {
+      if (result.success && result.data) {
+        const user = (result.data as any).user || result.data;
+        if (user.name) setName(user.name);
+        if (user.email) setEmail(user.email);
+        if (user.createdAt) {
+          setMemberSince(
+            new Date(user.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            })
+          );
+        }
+      }
+    });
+  }, []);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    // Update local auth state with new name
+    setAuthState({
+      ...authState,
+      isAuthenticated: true,
+      role: authState.role,
+      email: email,
+      user: {
+        ...authState.user,
+        email,
+        name,
+      },
+    });
     toast.success("Settings saved successfully!");
   };
 
@@ -40,12 +89,16 @@ export function SettingsPage() {
 
           <div className="flex items-center gap-4 mb-2">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-salami-green to-salami-gold flex items-center justify-center text-white text-[1.25rem]" style={{ fontWeight: 700 }}>
-              AH
+              {initials}
             </div>
             <div>
-              <div className="text-foreground" style={{ fontWeight: 500 }}>Ahmed Hassan</div>
+              <div className="text-foreground" style={{ fontWeight: 500 }}>{name || email}</div>
               <div className="text-[0.875rem] text-muted-foreground">
-                Member since Feb 2026
+                {memberSince ? `Member since ${memberSince}` : (
+                  <span className="inline-flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -87,11 +140,8 @@ export function SettingsPage() {
             <Lock className="w-5 h-5 text-salami-green" />
             Change Password
           </h2>
-
           <div>
-            <label className="block text-[0.875rem] text-foreground mb-1.5">
-              Current Password
-            </label>
+            <label className="block text-[0.875rem] text-foreground mb-1.5">Current Password</label>
             <input
               type="password"
               placeholder="Enter current password"
@@ -99,9 +149,7 @@ export function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-[0.875rem] text-foreground mb-1.5">
-              New Password
-            </label>
+            <label className="block text-[0.875rem] text-foreground mb-1.5">New Password</label>
             <input
               type="password"
               placeholder="Enter new password"
@@ -116,55 +164,37 @@ export function SettingsPage() {
             <Bell className="w-5 h-5 text-salami-green" />
             Notifications
           </h2>
-
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-input-background">
-              <div>
-                <div className="text-foreground text-[0.875rem]" style={{ fontWeight: 500 }}>
-                  Email Notifications
+            {[
+              {
+                label: "Email Notifications",
+                desc: "Receive email updates about your campaigns",
+                value: emailNotifications,
+                setter: setEmailNotifications,
+              },
+              {
+                label: "Spin Notifications",
+                desc: "Get notified when someone spins your wheel",
+                value: spinNotifications,
+                setter: setSpinNotifications,
+              },
+            ].map(({ label, desc, value, setter }) => (
+              <div key={label} className="flex items-center justify-between p-4 rounded-xl bg-input-background">
+                <div>
+                  <div className="text-foreground text-[0.875rem]" style={{ fontWeight: 500 }}>{label}</div>
+                  <div className="text-[0.75rem] text-muted-foreground mt-0.5">{desc}</div>
                 </div>
-                <div className="text-[0.75rem] text-muted-foreground mt-0.5">
-                  Receive email updates about your campaigns
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setter(!value)}
+                  className={`relative w-12 h-7 rounded-full transition-colors ${value ? "bg-salami-green" : "bg-gray-300"}`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${value ? "left-[22px]" : "left-0.5"}`}
+                  />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setEmailNotifications(!emailNotifications)}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
-                  emailNotifications ? "bg-salami-green" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${
-                    emailNotifications ? "left-[22px]" : "left-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl bg-input-background">
-              <div>
-                <div className="text-foreground text-[0.875rem]" style={{ fontWeight: 500 }}>
-                  Spin Notifications
-                </div>
-                <div className="text-[0.75rem] text-muted-foreground mt-0.5">
-                  Get notified when someone spins your wheel
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSpinNotifications(!spinNotifications)}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
-                  spinNotifications ? "bg-salami-green" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${
-                    spinNotifications ? "left-[22px]" : "left-0.5"
-                  }`}
-                />
-              </button>
-            </div>
+            ))}
           </div>
         </div>
 

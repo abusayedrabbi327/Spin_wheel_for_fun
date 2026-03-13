@@ -28,9 +28,10 @@ export function LoginPage() {
 
       if (result.success && result.data) {
         // Store user info in auth state
+        const isAdminUser = result.data.user.role === "ADMIN";
         setAuthState({
           isAuthenticated: true,
-          role: result.data.user.role === "ADMIN" ? "admin" : "user",
+          role: isAdminUser ? "admin" : "user",
           email: result.data.user.email,
           user: {
             id: result.data.user.id,
@@ -40,7 +41,7 @@ export function LoginPage() {
           }
         });
         toast.success("Login successful!");
-        navigate("/dashboard");
+        navigate(isAdminUser ? "/admin" : "/dashboard");
       } else {
         toast.error(result.error || "Invalid credentials");
       }
