@@ -45,6 +45,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       slug: wheel.slug,
       type: wheel.type,
       allowBetterLuck: wheel.allowBetterLuck,
+      isActive: wheel.isActive,
+      expiryDate: wheel.expiryDate,
       items: wheel.items
         .sort((a, b) => a.order - b.order)
         .map((item) => ({ id: item._id?.toString(), label: item.label })),
