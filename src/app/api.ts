@@ -31,7 +31,7 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const token = getToken();
-  
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
@@ -44,18 +44,18 @@ async function apiRequest<T>(
       headers,
     });
 
-    const data = await response.json();
+    const responseData = await response.json();
 
     if (!response.ok) {
       return {
         success: false,
-        error: data.error || `HTTP Error: ${response.status}`,
+        error: responseData.error || `HTTP Error: ${response.status}`,
       };
     }
 
     return {
       success: true,
-      data,
+      data: responseData.data !== undefined ? responseData.data : responseData,
     };
   } catch (error) {
     return {
@@ -87,11 +87,11 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    
+
     if (result.success && result.data?.token) {
       setToken(result.data.token);
     }
-    
+
     return result;
   },
 
@@ -100,11 +100,11 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify({ email, password, name }),
     });
-    
+
     if (result.success && result.data?.token) {
       setToken(result.data.token);
     }
-    
+
     return result;
   },
 

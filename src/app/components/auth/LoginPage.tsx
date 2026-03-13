@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Star, Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { login, setAuthState, ADMIN_EMAIL, ADMIN_PASSWORD } from "../../auth";
+import { setAuthState } from "../../auth";
 import { authApi } from "../../api";
 
 export function LoginPage() {
@@ -15,25 +15,17 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
     }
 
-    // Check for admin login (fixed credentials)
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      login(email, password);
-      toast.success("Welcome, Admin!");
-      navigate("/admin");
-      return;
-    }
-
-    // Regular user - call API
+    // Try to login via API
     setIsLoading(true);
     try {
       const result = await authApi.login(email, password);
-      
+
       if (result.success && result.data) {
         // Store user info in auth state
         setAuthState({
