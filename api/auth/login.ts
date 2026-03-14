@@ -18,10 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const action = String(actionParam || actionFromPath || "login").toLowerCase();
 
   try {
+    await connectDB();
+
     if (action === "me") {
       if (req.method !== "GET") return methodNotAllowed(res);
-
-      await connectDB();
 
       const tokenPayload = getUserFromRequest(req);
       if (!tokenPayload) return res.status(401).json({ success: false, error: "Unauthorized" });
@@ -56,8 +56,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!rate.allowed) {
         return res.status(429).json({ success: false, error: "Too many registration attempts", retryAfter: rate.retryAfter });
       }
-
-      await connectDB();
 
       const { email, password, name } = req.body;
       const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
@@ -111,8 +109,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!rate.allowed) {
       return res.status(429).json({ success: false, error: "Too many login attempts", retryAfter: rate.retryAfter });
     }
-
-    await connectDB();
 
     const { email, password } = req.body;
     const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
