@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { isAdmin, logout, getAuthState } from "../../auth";
+import { adminApi, type AdminStats } from "../../api";
 
 const navItems = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard },
@@ -28,6 +30,9 @@ export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const authState = getAuthState();
   const adminName = authState?.user?.name || authState?.email?.split("@")[0] || "Admin";
@@ -38,8 +43,26 @@ export function AdminLayout() {
     if (!isAdmin()) {
       toast.error("Access denied. Admin privileges required.");
       navigate("/login");
+    } else {
+      adminApi.getStats().then((res) => {
+        if (res.success && res.data) {
+          setStats(res.data);
+        }
+      });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    if (showNotifications) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showNotifications]);
 
   // Don't render if not admin
   if (!isAdmin()) {
@@ -95,8 +118,8 @@ export function AdminLayout() {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                  ? "bg-white/10 text-white"
+                  : "text-white/50 hover:bg-white/5 hover:text-white/80"
                   }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -139,10 +162,85 @@ export function AdminLayout() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="relative text-muted-foreground hover:text-foreground transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-gray-100"
+                >
+                  <Bell className="w-5 h-5" />
+                  {stats && (stats.recent.users > 0 || stats.recent.wheels > 0) && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-border overflow-hidden z-50 origin-top-right"
+                    >
+                      <div className="p-4 border-b border-border bg-gray-50/50">
+                        <h3 className="text-[0.875rem] text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>Notifications</h3>
+                        <p className="text-[0.75rem] text-muted-foreground">Recent platform activity (Last 7 days)</p>
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto">
+                        {!stats ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+                        ) : stats.recent.users === 0 && stats.recent.wheels === 0 && stats.recent.spins === 0 ? (
+                          <div className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
+                            <Bell className="w-6 h-6 text-gray-300" />
+                            No new notifications
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-border">
+                            {stats.recent.users > 0 && (
+                              <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                                  <Users className="w-4 h-4 text-blue-500" />
+                                </div>
+                                <div>
+                                  <p className="text-[0.875rem] text-foreground"><span style={{ fontWeight: 600 }}>{stats.recent.users} new users</span> have joined the platform.</p>
+                                  <p className="text-[0.75rem] text-muted-foreground mt-1">Recently</p>
+                                </div>
+                              </div>
+                            )}
+                            {stats.recent.wheels > 0 && (
+                              <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                                  <CircleDot className="w-4 h-4 text-amber-500" />
+                                </div>
+                                <div>
+                                  <p className="text-[0.875rem] text-foreground"><span style={{ fontWeight: 600 }}>{stats.recent.wheels} new wheels</span> were created.</p>
+                                  <p className="text-[0.75rem] text-muted-foreground mt-1">Recently</p>
+                                </div>
+                              </div>
+                            )}
+                            {stats.recent.spins > 0 && (
+                              <div className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-full bg-salami-green/10 flex items-center justify-center shrink-0">
+                                  <BarChart3 className="w-4 h-4 text-salami-green" />
+                                </div>
+                                <div>
+                                  <p className="text-[0.875rem] text-foreground"><span style={{ fontWeight: 600 }}>{stats.recent.spins} new spins</span> occurred.</p>
+                                  <p className="text-[0.75rem] text-muted-foreground mt-1">Recently</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3 border-t border-border text-center bg-gray-50/50">
+                        <Link to="/admin/analytics" className="text-[0.75rem] text-salami-green hover:text-salami-green-dark" style={{ fontWeight: 600 }}>
+                          View All Analytics
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <div className="flex items-center gap-2 cursor-pointer">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-[0.75rem]" style={{ fontWeight: 600 }}>
                   {adminInitials}
