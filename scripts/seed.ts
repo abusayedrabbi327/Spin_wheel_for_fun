@@ -6,10 +6,15 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@spinwheel.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 if (!MONGODB_URI) {
     console.error("❌ MONGODB_URI is not set in .env");
+    process.exit(1);
+}
+
+if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 8) {
+    console.error("❌ ADMIN_PASSWORD must be set and at least 8 characters");
     process.exit(1);
 }
 

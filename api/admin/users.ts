@@ -4,14 +4,11 @@ import User from "../_models/User.js";
 import Wheel from "../_models/Wheel.js";
 import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
-import { success, error, notFound, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
+import { success, error, notFound, unauthorized, methodNotAllowed, serverError, applyCors, escapeRegex } from "../_lib/utils.js";
 import mongoose from "mongoose";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
 
@@ -29,8 +26,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const skip = offset ? parseInt(Array.isArray(offset) ? offset[0] : offset) : 0;
       const searchStr = Array.isArray(search) ? search[0] : search;
 
-      const query = searchStr
-        ? { $or: [{ name: { $regex: searchStr, $options: "i" } }, { email: { $regex: searchStr, $options: "i" } }] }
+      const safeSearch = searchStr ? escapeRegex(searchStr) : "";
+
+      const query = safeSearch
+        ? { $or: [{ name: { $regex: safeSearch, $options: "i" } }, { email: { $regex: safeSearch, $options: "i" } }] }
         : {};
 
       const [users, total] = await Promise.all([

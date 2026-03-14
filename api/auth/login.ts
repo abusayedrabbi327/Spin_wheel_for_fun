@@ -2,13 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../_lib/mongodb.js";
 import User from "../_models/User.js";
 import { verifyPassword, generateToken } from "../_lib/auth.js";
-import { success, error, methodNotAllowed, serverError } from "../_lib/utils.js";
+import { success, error, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return methodNotAllowed(res);
@@ -17,13 +14,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await connectDB();
 
     const { email, password } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const passwordValue = typeof password === "string" ? password : "";
 
-    if (!email || !password) return error(res, "Email and password are required");
+    if (!normalizedEmail || !passwordValue) return error(res, "Email and password are required");
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) return error(res, "Please provide a valid email");
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) return error(res, "Invalid email or password", 401);
 
-    const isValidPassword = await verifyPassword(password, user.password);
+    const isValidPassword = await verifyPassword(passwordValue, user.password);
     if (!isValidPassword) return error(res, "Invalid email or password", 401);
 
     const token = generateToken({

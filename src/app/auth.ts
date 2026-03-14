@@ -19,15 +19,22 @@ interface AuthState {
 
 const AUTH_KEY = "spinwheel_auth";
 
-// Fixed admin credentials
-export const ADMIN_EMAIL = "abusayed102188@gmail.com";
-export const ADMIN_PASSWORD = "sayed@admin_327";
+function hasToken(): boolean {
+  return Boolean(localStorage.getItem("spinwheel_token"));
+}
 
 export function getAuthState(): AuthState {
   try {
     const stored = localStorage.getItem(AUTH_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Partial<AuthState>;
+      const safeRole: UserRole = parsed.role === "admin" || parsed.role === "user" ? parsed.role : null;
+      return {
+        isAuthenticated: parsed.isAuthenticated === true,
+        role: safeRole,
+        email: typeof parsed.email === "string" ? parsed.email : null,
+        user: parsed.user,
+      };
     }
   } catch {
     // Invalid stored data
@@ -36,47 +43,30 @@ export function getAuthState(): AuthState {
 }
 
 export function setAuthState(state: AuthState): void {
-  localStorage.setItem(AUTH_KEY, JSON.stringify(state));
-}
-
-export function login(email: string, password: string): { success: boolean; role: UserRole } {
-  // Check if admin
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    const state: AuthState = {
-      isAuthenticated: true,
-      role: "admin",
-      email,
-      user: { email, name: "Admin" }
-    };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(state));
-    return { success: true, role: "admin" };
-  }
-
-  // Regular user - accept any credentials for demo
-  if (email && password) {
-    const state: AuthState = {
-      isAuthenticated: true,
-      role: "user",
-      email,
-      user: { email, name: email.split("@")[0] }
-    };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(state));
-    return { success: true, role: "user" };
-  }
-
-  return { success: false, role: null };
+  const role: UserRole = state.role === "admin" || state.role === "user" ? state.role : null;
+  localStorage.setItem(
+    AUTH_KEY,
+    JSON.stringify({
+      ...state,
+      role,
+      isAuthenticated: state.isAuthenticated === true,
+    })
+  );
 }
 
 export function logout(): void {
   localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem("spinwheel_token");
 }
 
 export function isAdmin(): boolean {
+  if (!hasToken()) return false;
   const role = getAuthState().role;
   return role === "admin" || (role as string) === "ADMIN";
 }
 
 export function isAuthenticated(): boolean {
+  if (!hasToken()) return false;
   const state = getAuthState();
   return state.isAuthenticated === true;
 }

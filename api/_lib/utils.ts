@@ -1,4 +1,53 @@
-import type { VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+function normalizeOrigin(value: string): string {
+  return value.trim().replace(/\/$/, "").toLowerCase();
+}
+
+function getAllowedOrigins(): Set<string> {
+  const origins = new Set<string>([
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ]);
+
+  const configuredOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => normalizeOrigin(origin))
+    .filter(Boolean);
+
+  configuredOrigins.forEach((origin) => origins.add(origin));
+
+  if (process.env.VERCEL_URL) {
+    origins.add(normalizeOrigin(`https://${process.env.VERCEL_URL}`));
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    origins.add(normalizeOrigin(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`));
+  }
+
+  return origins;
+}
+
+const ALLOWED_ORIGINS = getAllowedOrigins();
+
+export function applyCors(req: VercelRequest, res: VercelResponse) {
+  const requestOrigin = typeof req.headers.origin === "string"
+    ? normalizeOrigin(req.headers.origin)
+    : "";
+
+  if (requestOrigin && ALLOWED_ORIGINS.has(requestOrigin)) {
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin as string);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+export function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export function success<T>(res: VercelResponse, data: T, status = 200) {
   return res.status(status).json({ success: true, data });

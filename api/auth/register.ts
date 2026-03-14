@@ -2,13 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import connectDB from "../_lib/mongodb.js";
 import User from "../_models/User.js";
 import { hashPassword, generateToken } from "../_lib/auth.js";
-import { success, error, methodNotAllowed, serverError } from "../_lib/utils.js";
+import { success, error, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return methodNotAllowed(res);
@@ -17,18 +14,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await connectDB();
 
     const { email, password, name } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const passwordValue = typeof password === "string" ? password : "";
+    const safeName = typeof name === "string" ? name.trim() : "";
 
-    if (!email || !password) return error(res, "Email and password are required");
-    if (password.length < 6) return error(res, "Password must be at least 6 characters");
+    if (!normalizedEmail || !passwordValue) return error(res, "Email and password are required");
+    if (passwordValue.length < 8) return error(res, "Password must be at least 8 characters");
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) return error(res, "Please provide a valid email");
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) return error(res, "Email already registered", 409);
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(passwordValue);
     const user = await User.create({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
-      name: name || email.split("@")[0],
+      name: safeName || normalizedEmail.split("@")[0],
       role: "USER",
     });
 

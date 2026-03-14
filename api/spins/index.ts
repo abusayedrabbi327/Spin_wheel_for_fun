@@ -3,14 +3,11 @@ import connectDB from "../_lib/mongodb.js";
 import Wheel from "../_models/Wheel.js";
 import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
-import { success, error, notFound, methodNotAllowed, serverError } from "../_lib/utils.js";
+import { success, error, notFound, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
 import mongoose from "mongoose";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
 

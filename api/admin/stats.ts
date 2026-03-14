@@ -4,13 +4,10 @@ import User from "../_models/User.js";
 import Wheel from "../_models/Wheel.js";
 import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
-import { success, unauthorized, methodNotAllowed, serverError } from "../_lib/utils.js";
+import { success, unauthorized, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return methodNotAllowed(res);

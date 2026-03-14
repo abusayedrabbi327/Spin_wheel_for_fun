@@ -3,13 +3,10 @@ import connectDB from "../../_lib/mongodb.js";
 import Wheel from "../../_models/Wheel.js";
 import Spin from "../../_models/Spin.js";
 import "../../_models/User.js"; // Import User to register the schema for populate()
-import { success, notFound, serverError } from "../../_lib/utils.js";
+import { success, notFound, serverError, applyCors } from "../../_lib/utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  applyCors(req, res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });

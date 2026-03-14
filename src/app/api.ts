@@ -3,6 +3,8 @@
  * Handles all API calls to the Vercel serverless functions
  */
 
+import { logout } from "./auth";
+
 // @ts-ignore - Vite env
 const API_BASE = (import.meta.env?.VITE_API_URL as string) || "/api";
 
@@ -44,18 +46,25 @@ async function apiRequest<T>(
       headers,
     });
 
-    const responseData = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const responseData = contentType.includes("application/json")
+      ? await response.json()
+      : null;
+
+    if (response.status === 401) {
+      logout();
+    }
 
     if (!response.ok) {
       return {
         success: false,
-        error: responseData.error || `HTTP Error: ${response.status}`,
+        error: responseData?.error || `HTTP Error: ${response.status}`,
       };
     }
 
     return {
       success: true,
-      data: responseData.data !== undefined ? responseData.data : responseData,
+      data: responseData?.data !== undefined ? responseData.data : responseData,
     };
   } catch (error) {
     return {
