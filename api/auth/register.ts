@@ -3,6 +3,7 @@ import connectDB from "../_lib/mongodb.js";
 import User from "../_models/User.js";
 import { hashPassword, generateToken } from "../_lib/auth.js";
 import { success, error, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
+import { checkAbuseBlock, checkRateLimit, recordAbuseSignal } from "../_lib/security.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res);
@@ -11,6 +12,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return methodNotAllowed(res);
 
   try {
+    const blocked = await checkAbuseBlock(req, "auth");
+    if (blocked.blocked) {
+      return res.status(429).json({ success: false, error: blocked.reason, retryAfter: blocked.retryAfter });
+    }
+
+    const rate = await checkRateLimit({ req, routeKey: "auth:register", maxRequests: 10, windowSeconds: 60 });
+    if (!rate.allowed) {
+      return res.status(429).json({ success: false, error: "Too many registration attempts", retryAfter: rate.retryAfter });
+    }
+
     await connectDB();
 
     const { email, password, name } = req.body;
@@ -25,7 +36,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!emailRegex.test(normalizedEmail)) return error(res, "Please provide a valid email");
 
     const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) return error(res, "Email already registered", 409);
+    if (existingUser) {
+      await recordAbuseSignal({ req, context: "auth", severity: 1, reason: "Duplicate registration attempt" });
+      return error(res, "Email already registered", 409);
+    }
 
     const hashedPassword = await hashPassword(passwordValue);
     const user = await User.create({

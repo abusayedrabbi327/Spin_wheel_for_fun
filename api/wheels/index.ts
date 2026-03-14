@@ -4,6 +4,7 @@ import Wheel from "../_models/Wheel.js";
 import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, unauthorized, methodNotAllowed, serverError, generateSlug, applyCors } from "../_lib/utils.js";
+import { addXp, incrementUserMetric, awardMilestoneStickers, evaluateActiveEventProgress, XP_REWARDS } from "../_lib/gamification.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res);
@@ -62,6 +63,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           order: index,
         })),
       });
+
+      // Reward progression for creating a wheel without blocking the main flow.
+      try {
+        const progress = await addXp(user.userId, XP_REWARDS.CREATE_WHEEL);
+        await incrementUserMetric(user.userId, "totalWheels", 1);
+        await awardMilestoneStickers(user.userId, progress.xp);
+        await evaluateActiveEventProgress(user.userId);
+      } catch (progressErr) {
+        console.error("Progress update failed after wheel creation:", progressErr);
+      }
 
       return success(res, {
         ...wheel.toObject(),

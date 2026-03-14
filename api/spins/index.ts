@@ -5,6 +5,8 @@ import Spin from "../_models/Spin.js";
 import { getUserFromRequest } from "../_lib/auth.js";
 import { success, error, notFound, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
 import mongoose from "mongoose";
+import { addXp, incrementUserMetric, awardMilestoneStickers, evaluateActiveEventProgress, XP_REWARDS } from "../_lib/gamification.js";
+import { checkAbuseBlock, checkRateLimit, recordAbuseSignal } from "../_lib/security.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res);
@@ -12,10 +14,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
+    const blocked = await checkAbuseBlock(req, "spins");
+    if (blocked.blocked) {
+      return res.status(429).json({ success: false, error: blocked.reason, retryAfter: blocked.retryAfter });
+    }
+
     await connectDB();
 
     // POST - Record a new spin
     if (req.method === "POST") {
+      const rate = await checkRateLimit({ req, routeKey: "spins:post", maxRequests: 40, windowSeconds: 60 });
+      if (!rate.allowed) {
+        await recordAbuseSignal({ req, context: "spins", severity: 2, reason: "Spin burst limit exceeded" });
+        return res.status(429).json({ success: false, error: "Too many spin requests", retryAfter: rate.retryAfter });
+      }
+
       const { wheelId, result, spinnerName, spinnerEmail, participantName, participantPhone } = req.body;
 
       if (!wheelId) return error(res, "Wheel ID is required");
@@ -40,6 +53,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         participantName: participantName || spinnerName || "Anonymous",
         participantPhone: participantPhone || spinnerEmail || undefined,
       });
+
+      const actor = getUserFromRequest(req);
+      if (actor) {
+        try {
+          const progress = await addXp(actor.userId, XP_REWARDS.SPIN_PLAYED);
+          await incrementUserMetric(actor.userId, "totalSpins", 1);
+          await awardMilestoneStickers(actor.userId, progress.xp);
+          await evaluateActiveEventProgress(actor.userId);
+        } catch (progressErr) {
+          console.error("Progress update failed after spin:", progressErr);
+        }
+      }
 
       return success(res, {
         ...spin.toObject(),

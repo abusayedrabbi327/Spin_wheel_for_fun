@@ -11,7 +11,7 @@ import {
   InboxIcon,
 } from "lucide-react";
 import { getAuthState } from "../../auth";
-import { wheelsApi, spinsApi, type Wheel } from "../../api";
+import { progressApi, wheelsApi, type Wheel } from "../../api";
 
 export function DashboardHome() {
   const authState = getAuthState();
@@ -19,6 +19,8 @@ export function DashboardHome() {
 
   const [wheels, setWheels] = useState<Wheel[]>([]);
   const [totalSpins, setTotalSpins] = useState(0);
+  const [level, setLevel] = useState<number | null>(null);
+  const [streakDays, setStreakDays] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +36,12 @@ export function DashboardHome() {
             0
           );
           setTotalSpins(spinTotal);
+        }
+
+        const progressResult = await progressApi.me();
+        if (progressResult.success && progressResult.data) {
+          setLevel(progressResult.data.level);
+          setStreakDays(progressResult.data.streakDays);
         }
       } finally {
         setLoading(false);
@@ -107,6 +115,26 @@ export function DashboardHome() {
             )}
           </motion.div>
         ))}
+      </div>
+
+      <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 600 }}>
+              Your Progress
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Level {level ?? "--"} · {streakDays ?? "--"} day streak
+            </p>
+          </div>
+          <Link
+            to="/dashboard/progress"
+            className="px-4 py-2 rounded-xl bg-salami-green text-white text-sm hover:bg-salami-green-dark"
+            style={{ fontWeight: 600 }}
+          >
+            Open Rewards
+          </Link>
+        </div>
       </div>
 
       {/* Recent Wheels */}

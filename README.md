@@ -30,6 +30,12 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 - Share wheels via unique links
 - Customize wheel appearance
 
+### 🎮 Gamification and Events
+- XP, levels, and daily streak tracking
+- Sticker collection system with rarity tiers
+- Seasonal event missions (Eid/Puja templates)
+- AI-powered family-safe game recommendations
+
 ### 🛡️ Admin Panel
 - View platform analytics
 - Manage users and roles
@@ -185,6 +191,10 @@ A modern, interactive Spin Wheel SaaS application built with React and Vite. Cre
 3. Add environment variables in Vercel dashboard:
    - `MONGODB_URI`
    - `JWT_SECRET`
+   - `LONGCAT_API_KEY`
+   - `LONGCAT_OPENAI_BASE` (optional; default is set)
+   - `LONGCAT_MODEL` (optional; default is set)
+   - `LONGCAT_DAILY_TOKEN_LIMIT` (optional; default `100000`)
 4. Deploy!
 
 ### Manual Deployment

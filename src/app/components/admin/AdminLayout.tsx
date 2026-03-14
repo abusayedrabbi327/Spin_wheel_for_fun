@@ -6,6 +6,7 @@ import {
   Users,
   CircleDot,
   Settings,
+  CalendarDays,
   LogOut,
   ShieldCheck,
   Menu,
@@ -23,6 +24,7 @@ const navItems = [
   { label: "Users", path: "/admin/users", icon: Users },
   { label: "All Wheels", path: "/admin/wheels", icon: CircleDot },
   { label: "Analytics", path: "/admin/analytics", icon: BarChart3 },
+  { label: "Events", path: "/admin/events", icon: CalendarDays },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 

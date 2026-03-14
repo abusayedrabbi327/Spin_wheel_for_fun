@@ -299,6 +299,156 @@ export interface AdminUsersResponse {
   offset: number;
 }
 
+export interface ProgressSummary {
+  xp: number;
+  level: number;
+  streakDays: number;
+  totals: {
+    spins: number;
+    wheels: number;
+    sessions: number;
+  };
+  stickers: {
+    totalOwned: number;
+    newlyUnlocked: string[];
+  };
+  levelProgress: {
+    currentLevel: number;
+    currentLevelBaseXp: number;
+    nextLevelBaseXp: number;
+    progressInLevel: number;
+    neededForNext: number;
+  };
+  event: {
+    id: string;
+    slug: string;
+    name: string;
+    occasion: string;
+    startAt: string;
+    endAt: string;
+    completedMissionIds: string[];
+  } | null;
+}
+
+export interface StickerItem {
+  id: string;
+  code: string;
+  name: string;
+  batch: string;
+  rarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY" | "MYTHIC";
+  pointsRequired: number;
+  occasion: string | null;
+  isLifetimeExclusive: boolean;
+  owned: boolean;
+  obtainedAt: string | null;
+  source: "MILESTONE" | "EVENT" | "ADMIN" | null;
+}
+
+export interface StickerListResponse {
+  totalCatalog: number;
+  totalOwned: number;
+  stickers: StickerItem[];
+}
+
+export interface EventMissionView {
+  missionId: string;
+  title: string;
+  description: string;
+  metric: "totalSpins" | "totalWheels" | "streakDays";
+  target: number;
+  rewardXp: number;
+  rewardStickerCode: string | null;
+  current: number;
+  completed: boolean;
+}
+
+export interface EventView {
+  id: string;
+  slug: string;
+  name: string;
+  occasion: string;
+  startAt: string;
+  endAt: string;
+  oneTimeMythicStickerCode: string | null;
+  missions: EventMissionView[];
+}
+
+export interface ActiveEventResponse {
+  activeEvent: EventView | null;
+}
+
+export interface AIRecommendation {
+  title: string;
+  summary: string;
+  steps: string[];
+  safetyNotes?: string[];
+  missionIdeas?: string[];
+}
+
+export interface AIRecommendationResponse {
+  recommendation: AIRecommendation;
+}
+
+export interface AdminEventMission {
+  missionId: string;
+  title: string;
+  description: string;
+  metric: "totalSpins" | "totalWheels" | "streakDays";
+  target: number;
+  rewardXp: number;
+  rewardStickerCode?: string;
+}
+
+export interface AdminEvent {
+  id: string;
+  slug: string;
+  name: string;
+  occasion: string;
+  isActive: boolean;
+  startAt: string;
+  endAt: string;
+  oneTimeMythicStickerCode?: string | null;
+  missions: AdminEventMission[];
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  name: string;
+  email: string | null;
+  xp: number;
+  level: number;
+  streakDays: number;
+  totalSpins: number;
+  totalWheels: number;
+}
+
+export type ChallengeStatus = "PENDING" | "ACCEPTED" | "COMPLETED" | "DECLINED" | "EXPIRED";
+
+export interface FriendChallenge {
+  id: string;
+  title: string;
+  description: string | null;
+  status: ChallengeStatus;
+  creator: {
+    id: string;
+    name: string;
+    email: string | null;
+    score: number;
+  };
+  opponent: {
+    id: string;
+    name: string;
+    email: string | null;
+    score: number;
+  };
+  winnerUserId: string | null;
+  expiresAt: string;
+  acceptedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+}
+
 export const adminApi = {
   // Get admin stats
   getStats: async () => {
@@ -340,6 +490,103 @@ export const adminApi = {
       method: "DELETE",
     });
   },
+
+  getEvents: async () => {
+    return apiRequest<AdminEvent[]>("/admin/events");
+  },
+
+  createEvent: async (data: {
+    slug: string;
+    name: string;
+    occasion: string;
+    startAt: string;
+    endAt: string;
+    isActive?: boolean;
+    oneTimeMythicStickerCode?: string;
+    missions: AdminEventMission[];
+  }) => {
+    return apiRequest<AdminEvent>("/admin/events", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateEvent: async (id: string, data: Partial<AdminEvent>) => {
+    return apiRequest<AdminEvent>(`/admin/events/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteEvent: async (id: string) => {
+    return apiRequest<{ message: string }>(`/admin/events/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+export const progressApi = {
+  me: async () => {
+    return apiRequest<ProgressSummary>("/progress/me");
+  },
+};
+
+export const stickersApi = {
+  list: async () => {
+    return apiRequest<StickerListResponse>("/stickers");
+  },
+};
+
+export const eventsApi = {
+  active: async () => {
+    return apiRequest<ActiveEventResponse>("/events/active");
+  },
+};
+
+export const aiApi = {
+  recommend: async (input: {
+    mood: string;
+    groupSize: number;
+    occasion?: string;
+    durationMinutes?: number;
+    hasKids?: boolean;
+  }) => {
+    return apiRequest<AIRecommendationResponse>("/ai/recommend", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+};
+
+export const leaderboardApi = {
+  list: async (limit = 20) => {
+    return apiRequest<LeaderboardEntry[]>(`/leaderboard?limit=${limit}`);
+  },
+};
+
+export const challengesApi = {
+  list: async () => {
+    return apiRequest<FriendChallenge[]>("/challenges");
+  },
+
+  create: async (data: { opponentEmail: string; title: string; description?: string; expiresInDays?: number }) => {
+    return apiRequest<{ id: string; status: ChallengeStatus }>("/challenges", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (
+    id: string,
+    data:
+      | { action: "accept" | "decline" }
+      | { action: "complete"; creatorScore: number; opponentScore: number }
+  ) => {
+    return apiRequest<{ message: string; winnerUserId?: string | null }>(`/challenges/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 export default {
@@ -347,4 +594,10 @@ export default {
   wheels: wheelsApi,
   spins: spinsApi,
   admin: adminApi,
+  progress: progressApi,
+  stickers: stickersApi,
+  events: eventsApi,
+  ai: aiApi,
+  leaderboard: leaderboardApi,
+  challenges: challengesApi,
 };

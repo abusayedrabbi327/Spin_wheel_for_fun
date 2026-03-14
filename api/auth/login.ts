@@ -3,6 +3,7 @@ import connectDB from "../_lib/mongodb.js";
 import User from "../_models/User.js";
 import { verifyPassword, generateToken } from "../_lib/auth.js";
 import { success, error, methodNotAllowed, serverError, applyCors } from "../_lib/utils.js";
+import { checkAbuseBlock, checkRateLimit, recordAbuseSignal } from "../_lib/security.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res);
@@ -11,6 +12,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return methodNotAllowed(res);
 
   try {
+    const blocked = await checkAbuseBlock(req, "auth");
+    if (blocked.blocked) {
+      return res.status(429).json({ success: false, error: blocked.reason, retryAfter: blocked.retryAfter });
+    }
+
+    const rate = await checkRateLimit({ req, routeKey: "auth:login", maxRequests: 20, windowSeconds: 60 });
+    if (!rate.allowed) {
+      return res.status(429).json({ success: false, error: "Too many login attempts", retryAfter: rate.retryAfter });
+    }
+
     await connectDB();
 
     const { email, password } = req.body;
@@ -23,10 +34,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!emailRegex.test(normalizedEmail)) return error(res, "Please provide a valid email");
 
     const user = await User.findOne({ email: normalizedEmail });
-    if (!user) return error(res, "Invalid email or password", 401);
+    if (!user) {
+      await recordAbuseSignal({ req, context: "auth", severity: 1, reason: "Invalid login email" });
+      return error(res, "Invalid email or password", 401);
+    }
 
     const isValidPassword = await verifyPassword(passwordValue, user.password);
-    if (!isValidPassword) return error(res, "Invalid email or password", 401);
+    if (!isValidPassword) {
+      await recordAbuseSignal({ req, context: "auth", severity: 1, reason: "Invalid login password" });
+      return error(res, "Invalid email or password", 401);
+    }
 
     const token = generateToken({
       userId: user._id.toString(),
