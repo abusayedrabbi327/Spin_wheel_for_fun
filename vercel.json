@@ -5,6 +5,34 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/auth/register",
+      "destination": "/api/auth/login?action=register"
+    },
+    {
+      "source": "/api/auth/me",
+      "destination": "/api/auth/login?action=me"
+    },
+    {
+      "source": "/api/admin/stats",
+      "destination": "/api/admin/users?resource=stats"
+    },
+    {
+      "source": "/api/admin/wheels",
+      "destination": "/api/admin/users?resource=wheels"
+    },
+    {
+      "source": "/api/admin/events/:id",
+      "destination": "/api/admin/users?resource=events&id=:id"
+    },
+    {
+      "source": "/api/admin/events",
+      "destination": "/api/admin/users?resource=events"
+    },
+    {
+      "source": "/api/challenges/:id",
+      "destination": "/api/challenges?id=:id"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     },
