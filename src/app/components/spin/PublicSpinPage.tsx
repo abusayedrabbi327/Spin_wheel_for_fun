@@ -153,7 +153,8 @@ export function PublicSpinPage() {
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState<Segment | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
   const animFrameRef = useRef<number>(0);
 
   // Load wheel by slug
@@ -217,13 +218,27 @@ export function PublicSpinPage() {
         fireConfetti();
 
         // Save spin to database
-        setSaving(true);
+        setSaveState("saving");
+        setSaveError("");
         spinsApi.record(
           wheel.id,
           winningSegment.label,
           name.trim(),
           phone.trim()
-        ).finally(() => setSaving(false));
+        )
+          .then((resp) => {
+            if (resp.success) {
+              setSaveState("saved");
+              return;
+            }
+
+            setSaveState("error");
+            setSaveError(resp.error || "Could not save this result");
+          })
+          .catch((err) => {
+            setSaveState("error");
+            setSaveError(err instanceof Error ? err.message : "Could not save this result");
+          });
       }
     };
 
@@ -235,6 +250,8 @@ export function PublicSpinPage() {
     setName("");
     setPhone("");
     setResult(null);
+    setSaveState("idle");
+    setSaveError("");
   };
 
   // Show loading state
@@ -395,12 +412,18 @@ export function PublicSpinPage() {
                 <span className="text-[2rem] text-white font-['Poppins',sans-serif]" style={{ fontWeight: 800 }}>{result.label}</span>
               </motion.div>
 
-              {saving ? (
+              {saveState === "saving" ? (
                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 mb-4">
                   <Loader2 className="w-3 h-3 animate-spin" /> Saving your result...
                 </p>
-              ) : (
+              ) : saveState === "saved" ? (
                 <p className="text-[0.875rem] text-salami-green mb-4" style={{ fontWeight: 500 }}>✓ Result saved!</p>
+              ) : saveState === "error" ? (
+                <p className="text-[0.875rem] text-red-600 mb-4" style={{ fontWeight: 500 }}>
+                  Could not save result: {saveError || "Please try again."}
+                </p>
+              ) : (
+                <p className="text-[0.875rem] text-muted-foreground mb-4" style={{ fontWeight: 500 }}>Finalizing result...</p>
               )}
 
               <p className="text-[0.75rem] text-muted-foreground mb-5">No take-backs! The wheel never lies.</p>

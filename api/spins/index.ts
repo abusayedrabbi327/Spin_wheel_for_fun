@@ -14,12 +14,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
+    await connectDB();
+
     const blocked = await checkAbuseBlock(req, "spins");
     if (blocked.blocked) {
       return res.status(429).json({ success: false, error: blocked.reason, retryAfter: blocked.retryAfter });
     }
-
-    await connectDB();
 
     // POST - Record a new spin
     if (req.method === "POST") {

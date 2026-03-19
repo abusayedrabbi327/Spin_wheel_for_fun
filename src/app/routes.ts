@@ -3,22 +3,25 @@ import { LandingPage } from "./components/landing/LandingPage";
 import { LoginPage } from "./components/auth/LoginPage";
 import { RegisterPage } from "./components/auth/RegisterPage";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
-import { DashboardHome } from "./components/dashboard/DashboardHome";
-import { CreateWheel } from "./components/dashboard/CreateWheel";
-import { MyWheels } from "./components/dashboard/MyWheels";
-import { ProgressPage } from "./components/dashboard/ProgressPage";
-import { AIGameCoachPage } from "./components/dashboard/AIGameCoachPage";
-import { ChallengesPage } from "./components/dashboard/ChallengesPage";
-import { CampaignDetail } from "./components/dashboard/CampaignDetail";
-import { SettingsPage } from "./components/dashboard/SettingsPage";
-import { PublicSpinPage } from "./components/spin/PublicSpinPage";
 import { AdminLayout } from "./components/admin/AdminLayout";
-import { AdminDashboard } from "./components/admin/AdminDashboard";
-import { AdminUsers } from "./components/admin/AdminUsers";
-import { AdminWheels } from "./components/admin/AdminWheels";
-import { AdminAnalytics } from "./components/admin/AdminAnalytics";
-import { AdminEvents } from "./components/admin/AdminEvents";
-import { AdminSettings } from "./components/admin/AdminSettings";
+
+const lazyDashboardHome = async () => ({ Component: (await import("./components/dashboard/DashboardHome")).DashboardHome });
+const lazyProgressPage = async () => ({ Component: (await import("./components/dashboard/ProgressPage")).ProgressPage });
+const lazyAIGameCoachPage = async () => ({ Component: (await import("./components/dashboard/AIGameCoachPage")).AIGameCoachPage });
+const lazyChallengesPage = async () => ({ Component: (await import("./components/dashboard/ChallengesPage")).ChallengesPage });
+const lazyMyWheels = async () => ({ Component: (await import("./components/dashboard/MyWheels")).MyWheels });
+const lazyCreateWheel = async () => ({ Component: (await import("./components/dashboard/CreateWheel")).CreateWheel });
+const lazyCampaignDetail = async () => ({ Component: (await import("./components/dashboard/CampaignDetail")).CampaignDetail });
+const lazySettingsPage = async () => ({ Component: (await import("./components/dashboard/SettingsPage")).SettingsPage });
+
+const lazyAdminDashboard = async () => ({ Component: (await import("./components/admin/AdminDashboard")).AdminDashboard });
+const lazyAdminUsers = async () => ({ Component: (await import("./components/admin/AdminUsers")).AdminUsers });
+const lazyAdminWheels = async () => ({ Component: (await import("./components/admin/AdminWheels")).AdminWheels });
+const lazyAdminAnalytics = async () => ({ Component: (await import("./components/admin/AdminAnalytics")).AdminAnalytics });
+const lazyAdminEvents = async () => ({ Component: (await import("./components/admin/AdminEvents")).AdminEvents });
+const lazyAdminSettings = async () => ({ Component: (await import("./components/admin/AdminSettings")).AdminSettings });
+
+const lazyPublicSpinPage = async () => ({ Component: (await import("./components/spin/PublicSpinPage")).PublicSpinPage });
 
 export const router = createBrowserRouter([
   {
@@ -37,30 +40,30 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     Component: DashboardLayout,
     children: [
-      { index: true, Component: DashboardHome },
-      { path: "progress", Component: ProgressPage },
-      { path: "ai-coach", Component: AIGameCoachPage },
-      { path: "challenges", Component: ChallengesPage },
-      { path: "wheels", Component: MyWheels },
-      { path: "create", Component: CreateWheel },
-      { path: "campaign/:id", Component: CampaignDetail },
-      { path: "settings", Component: SettingsPage },
+      { index: true, lazy: lazyDashboardHome },
+      { path: "progress", lazy: lazyProgressPage },
+      { path: "ai-coach", lazy: lazyAIGameCoachPage },
+      { path: "challenges", lazy: lazyChallengesPage },
+      { path: "wheels", lazy: lazyMyWheels },
+      { path: "create", lazy: lazyCreateWheel },
+      { path: "campaign/:id", lazy: lazyCampaignDetail },
+      { path: "settings", lazy: lazySettingsPage },
     ],
   },
   {
     path: "/admin",
     Component: AdminLayout,
     children: [
-      { index: true, Component: AdminDashboard },
-      { path: "users", Component: AdminUsers },
-      { path: "wheels", Component: AdminWheels },
-      { path: "analytics", Component: AdminAnalytics },
-      { path: "events", Component: AdminEvents },
-      { path: "settings", Component: AdminSettings },
+      { index: true, lazy: lazyAdminDashboard },
+      { path: "users", lazy: lazyAdminUsers },
+      { path: "wheels", lazy: lazyAdminWheels },
+      { path: "analytics", lazy: lazyAdminAnalytics },
+      { path: "events", lazy: lazyAdminEvents },
+      { path: "settings", lazy: lazyAdminSettings },
     ],
   },
   {
     path: "/spin/:slug",
-    Component: PublicSpinPage,
+    lazy: lazyPublicSpinPage,
   },
 ]);
