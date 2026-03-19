@@ -92,7 +92,7 @@ export function DashboardLayout() {
               <Dices className="w-5 h-5 text-white" />
             </div>
             <span className="text-[1rem] text-foreground font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-              Salami Wheels
+              Spin Wheels
             </span>
           </Link>
           <button
