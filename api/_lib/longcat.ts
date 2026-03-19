@@ -36,12 +36,25 @@ export async function generateFamilySafeRecommendation(input: {
   occasion?: string;
   durationMinutes?: number;
   hasKids?: boolean;
+  prompt?: string;
+  area?: string;
 }) {
   if (!LONGCAT_API_KEY) {
     throw new Error("LONGCAT_API_KEY is not configured");
   }
 
-  const userPrompt = `Give one game recommendation for a social wheel app. Mood: ${input.mood}. Group size: ${input.groupSize}. Occasion: ${input.occasion || "general"}. Duration: ${input.durationMinutes || 20} minutes. Kids present: ${input.hasKids ? "yes" : "no"}.`;
+  const userPrompt = [
+    "Give one game recommendation for a social wheel app.",
+    `Mood: ${input.mood}.`,
+    `Group size: ${input.groupSize}.`,
+    `Occasion: ${input.occasion || "general"}.`,
+    `Duration: ${input.durationMinutes || 20} minutes.`,
+    `Kids present: ${input.hasKids ? "yes" : "no"}.`,
+    input.area ? `Preferred area/region context: ${input.area}.` : "",
+    input.prompt ? `Extra user request: ${input.prompt}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const systemPrompt = [
     "You are a family-safe game planner.",

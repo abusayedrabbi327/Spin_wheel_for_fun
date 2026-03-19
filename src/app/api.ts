@@ -389,6 +389,16 @@ export interface AIRecommendationResponse {
   recommendation: AIRecommendation;
 }
 
+export interface AIChatRequest {
+  prompt: string;
+  mood?: string;
+  groupSize?: number;
+  occasion?: string;
+  durationMinutes?: number;
+  hasKids?: boolean;
+  area?: string;
+}
+
 export interface AdminEventMission {
   missionId: string;
   title: string;
@@ -551,6 +561,13 @@ export const aiApi = {
     durationMinutes?: number;
     hasKids?: boolean;
   }) => {
+    return apiRequest<AIRecommendationResponse>("/ai/recommend", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+  },
+
+  chat: async (input: AIChatRequest) => {
     return apiRequest<AIRecommendationResponse>("/ai/recommend", {
       method: "POST",
       body: JSON.stringify(input),

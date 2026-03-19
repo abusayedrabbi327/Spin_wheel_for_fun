@@ -6,6 +6,7 @@ import {
   PlusCircle,
   Settings,
   Sparkles,
+  MessageSquare,
   Swords,
   LogOut,
   Dices,
@@ -22,6 +23,7 @@ import { isAuthenticated, logout, getAuthState } from "../../auth";
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Progress", path: "/dashboard/progress", icon: Sparkles },
+  { label: "AI Game Coach", path: "/dashboard/ai-coach", icon: MessageSquare },
   { label: "Challenges", path: "/dashboard/challenges", icon: Swords },
   { label: "My Wheels", path: "/dashboard/wheels", icon: CircleDot },
   { label: "Create Wheel", path: "/dashboard/create", icon: PlusCircle },

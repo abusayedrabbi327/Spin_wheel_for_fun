@@ -7,6 +7,7 @@ import { DashboardHome } from "./components/dashboard/DashboardHome";
 import { CreateWheel } from "./components/dashboard/CreateWheel";
 import { MyWheels } from "./components/dashboard/MyWheels";
 import { ProgressPage } from "./components/dashboard/ProgressPage";
+import { AIGameCoachPage } from "./components/dashboard/AIGameCoachPage";
 import { ChallengesPage } from "./components/dashboard/ChallengesPage";
 import { CampaignDetail } from "./components/dashboard/CampaignDetail";
 import { SettingsPage } from "./components/dashboard/SettingsPage";
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: DashboardHome },
       { path: "progress", Component: ProgressPage },
+      { path: "ai-coach", Component: AIGameCoachPage },
       { path: "challenges", Component: ChallengesPage },
       { path: "wheels", Component: MyWheels },
       { path: "create", Component: CreateWheel },

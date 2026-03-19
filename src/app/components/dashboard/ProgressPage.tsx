@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { Link } from "react-router";
 import { Sparkles, Trophy, Flame, Gift, Wand2, Loader2, CalendarRange } from "lucide-react";
 import { aiApi, eventsApi, progressApi, stickersApi, type AIRecommendation, type EventView, type ProgressSummary, type StickerItem } from "../../api";
 
@@ -184,13 +185,21 @@ export function ProgressPage() {
             <Wand2 className="w-5 h-5 text-salami-green" />
             AI Family Game Plan
           </h2>
-          <button
-            onClick={getAIPlan}
-            disabled={aiLoading}
-            className="px-4 py-2 text-sm rounded-xl bg-salami-green text-white hover:bg-salami-green-dark disabled:opacity-70"
-          >
-            {aiLoading ? "Thinking..." : "Generate"}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/dashboard/ai-coach"
+              className="px-4 py-2 text-sm rounded-xl border border-border text-foreground hover:bg-slate-50"
+            >
+              Open Chat
+            </Link>
+            <button
+              onClick={getAIPlan}
+              disabled={aiLoading}
+              className="px-4 py-2 text-sm rounded-xl bg-salami-green text-white hover:bg-salami-green-dark disabled:opacity-70"
+            >
+              {aiLoading ? "Thinking..." : "Generate"}
+            </button>
+          </div>
         </div>
 
         {!recommendation ? (

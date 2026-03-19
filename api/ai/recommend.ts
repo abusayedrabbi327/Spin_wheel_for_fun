@@ -16,17 +16,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!user) return unauthorized(res);
 
   try {
+    await connectDB();
+
     const rate = await checkRateLimit({ req, routeKey: "ai:recommend", maxRequests: 12, windowSeconds: 60 });
     if (!rate.allowed) {
       return res.status(429).json({ success: false, error: "Too many AI requests", retryAfter: rate.retryAfter });
     }
 
-    await connectDB();
+    const { mood, groupSize, occasion, durationMinutes, hasKids, prompt, area } = req.body || {};
 
-    const { mood, groupSize, occasion, durationMinutes, hasKids } = req.body || {};
-
-    if (!mood || typeof mood !== "string") {
-      return error(res, "Mood is required");
+    if ((!mood || typeof mood !== "string") && (!prompt || typeof prompt !== "string")) {
+      return error(res, "Mood or prompt is required");
     }
 
     const safeGroupSize = Math.max(1, Math.min(50, Number(groupSize) || 2));
@@ -35,11 +35,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await ensureUserProgress(user.userId);
 
     const recommendation = await generateFamilySafeRecommendation({
-      mood: mood.slice(0, 60),
+      mood: typeof mood === "string" ? mood.slice(0, 60) : "custom",
       groupSize: safeGroupSize,
       occasion: typeof occasion === "string" ? occasion.slice(0, 50) : undefined,
       durationMinutes: safeDuration,
       hasKids: Boolean(hasKids),
+      prompt: typeof prompt === "string" ? prompt.slice(0, 700) : undefined,
+      area: typeof area === "string" ? area.slice(0, 80) : undefined,
     });
 
     return success(res, { recommendation });
