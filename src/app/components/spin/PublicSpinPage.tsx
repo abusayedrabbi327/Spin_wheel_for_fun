@@ -15,6 +15,20 @@ const PALETTE = [
   "#f59e0b", "#3B82F6", "#8B5CF6", "#EF4444", "#EC4899",
 ];
 
+function getVisitorId(): string {
+  const storageKey = "spinwheel_visitor_id";
+  const existing = localStorage.getItem(storageKey);
+  if (existing) return existing;
+
+  const generated =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  localStorage.setItem(storageKey, generated);
+  return generated;
+}
+
 function createSegments(items: { label: string }[]): Segment[] {
   return items.map((item, i) => ({
     label: item.label,
@@ -235,7 +249,8 @@ export function PublicSpinPage() {
           wheel.id,
           winningSegment.label,
           name.trim(),
-          phone.trim()
+          phone.trim(),
+          getVisitorId()
         )
           .then((resp) => {
             if (resp.success) {

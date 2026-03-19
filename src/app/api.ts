@@ -223,10 +223,16 @@ export interface SpinsListResponse {
 
 export const spinsApi = {
   // Record a new spin
-  record: async (wheelId: string, result: string, spinnerName?: string, spinnerEmail?: string) => {
+  record: async (
+    wheelId: string,
+    result: string,
+    spinnerName?: string,
+    spinnerEmail?: string,
+    visitorId?: string
+  ) => {
     return apiRequest<Spin>("/spins", {
       method: "POST",
-      body: JSON.stringify({ wheelId, result, spinnerName, spinnerEmail }),
+      body: JSON.stringify({ wheelId, result, spinnerName, spinnerEmail, visitorId }),
     });
   },
 

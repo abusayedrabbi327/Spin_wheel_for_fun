@@ -8,6 +8,25 @@ import mongoose from "mongoose";
 import { addXp, incrementUserMetric, awardMilestoneStickers, evaluateActiveEventProgress, XP_REWARDS } from "../_lib/gamification.js";
 import { checkAbuseBlock, checkRateLimit, recordAbuseSignal } from "../_lib/security.js";
 
+function normalizeParticipantKey(raw: string): string {
+  const value = raw.trim();
+  if (!value) return "";
+
+  // Normalize email identity.
+  if (value.includes("@")) {
+    return value.toLowerCase();
+  }
+
+  // Normalize phone-like values to digits only.
+  const digitsOnly = value.replace(/\D/g, "");
+  if (digitsOnly.length >= 6) {
+    return digitsOnly;
+  }
+
+  // Fallback for other identifiers.
+  return value.toLowerCase();
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res);
 
@@ -29,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(429).json({ success: false, error: "Too many spin requests", retryAfter: rate.retryAfter });
       }
 
-      const { wheelId, result, spinnerName, spinnerEmail, participantName, participantPhone } = req.body;
+      const { wheelId, result, spinnerName, spinnerEmail, participantName, participantPhone, visitorId } = req.body;
 
       if (!wheelId) return error(res, "Wheel ID is required");
       if (!result) return error(res, "Spin result is required");
@@ -47,16 +66,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return error(res, "This wheel has reached its maximum number of spins");
       }
 
-      const participantKey = (participantPhone || spinnerEmail || "").trim();
-      if ((wheel as any).maxSpinsPerParticipant && !participantKey) {
-        return error(res, "Participant phone/email is required when per-person spin limit is enabled");
+      const participantKey = normalizeParticipantKey(participantPhone || spinnerEmail || "");
+      const normalizedVisitorId = typeof visitorId === "string" ? visitorId.trim() : "";
+
+      if ((wheel as any).maxSpinsPerParticipant && !participantKey && !normalizedVisitorId) {
+        return error(res, "Participant identifier is required when per-person spin limit is enabled");
       }
 
-      if ((wheel as any).maxSpinsPerParticipant && participantKey) {
-        const participantSpinCount = await Spin.countDocuments({
-          wheelId: wheel._id,
-          participantPhone: participantKey,
-        });
+      if ((wheel as any).maxSpinsPerParticipant) {
+        const identityFilters: Array<Record<string, string>> = [];
+        if (participantKey) identityFilters.push({ participantPhone: participantKey });
+        if (normalizedVisitorId) identityFilters.push({ visitorId: normalizedVisitorId });
+
+        const participantSpinCount = identityFilters.length
+          ? await Spin.countDocuments({
+              wheelId: wheel._id,
+              $or: identityFilters,
+            })
+          : 0;
 
         if (participantSpinCount >= (wheel as any).maxSpinsPerParticipant) {
           return error(
@@ -71,6 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         result,
         participantName: (participantName || spinnerName || "Anonymous").trim(),
         participantPhone: participantKey || undefined,
+        visitorId: normalizedVisitorId || undefined,
       });
 
       const actor = getUserFromRequest(req);

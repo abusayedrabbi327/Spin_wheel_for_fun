@@ -6,6 +6,7 @@ export interface ISpin extends Document {
     userId?: mongoose.Types.ObjectId;
     participantName: string;
     participantPhone?: string;
+    visitorId?: string;
     result: string;
     createdAt: Date;
 }
@@ -16,6 +17,7 @@ const spinSchema = new mongoose.Schema<ISpin>(
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         participantName: { type: String, default: "Anonymous" },
         participantPhone: { type: String },
+        visitorId: { type: String },
         result: { type: String, required: true },
     },
     { timestamps: true }
