@@ -45,9 +45,14 @@ export function CampaignDetail() {
         }
 
         if (spinsRes.success && spinsRes.data) {
-          setSpins(spinsRes.data.spins);
+          setSpins(spinsRes.data.spins || []);
+        } else {
+          // Log error but don't fail the entire page load if spins fail
+          console.warn("Failed to load spins:", spinsRes.error);
+          setSpins([]);
         }
       } catch (err) {
+        console.error("Error loading campaign data:", err);
         setError("An error occurred while loading data");
       } finally {
         setLoading(false);

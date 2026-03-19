@@ -84,7 +84,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const wheelIdStr = Array.isArray(wheelId) ? wheelId[0] : wheelId;
       if (!mongoose.Types.ObjectId.isValid(wheelIdStr)) return notFound(res, "Wheel not found");
 
-      const wheel = await Wheel.findById(wheelIdStr);
+      const wheelObjectId = new mongoose.Types.ObjectId(wheelIdStr);
+
+      const wheel = await Wheel.findById(wheelObjectId);
       if (!wheel) return notFound(res, "Wheel not found");
       if (wheel.userId.toString() !== user.userId && user.role?.toUpperCase() !== "ADMIN") {
         return res.status(401).json({ error: "You don't own this wheel" });
@@ -94,12 +96,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const skip = offset ? parseInt(Array.isArray(offset) ? offset[0] : offset) : 0;
 
       const [spins, total] = await Promise.all([
-        Spin.find({ wheelId: wheelIdStr }).sort({ createdAt: -1 }).limit(take).skip(skip).lean(),
-        Spin.countDocuments({ wheelId: wheelIdStr }),
+        Spin.find({ wheelId: wheelObjectId }).sort({ createdAt: -1 }).limit(take).skip(skip).lean(),
+        Spin.countDocuments({ wheelId: wheelObjectId }),
       ]);
 
       return success(res, {
-        spins: spins.map((s) => ({ ...s, id: s._id.toString(), wheelId: s.wheelId.toString() })),
+        spins: spins.map((s) => ({
+          id: s._id?.toString?.() || String(s._id),
+          wheelId: s.wheelId?.toString?.() || String(s.wheelId),
+          result: s.result,
+          participantName: s.participantName,
+          participantPhone: s.participantPhone,
+          createdAt: s.createdAt,
+        })),
         total,
         limit: take,
         offset: skip,
