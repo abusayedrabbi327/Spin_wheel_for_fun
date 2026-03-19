@@ -145,6 +145,7 @@ export function PublicSpinPage() {
 
   const [wheel, setWheel] = useState<Wheel | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<"expired" | "full" | "not-found" | null>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
 
   const [name, setName] = useState("");
@@ -166,8 +167,18 @@ export function PublicSpinPage() {
         setSegments(createSegments(res.data.items));
         setStep("form");
       } else {
-        setLoadError(res.error || "Wheel not found");
+        const errorMsg = res.error || "Wheel not found";
+        setLoadError(errorMsg);
         setStep("form");
+
+        // Determine error type from message
+        if (errorMsg.includes("expired")) {
+          setErrorType("expired");
+        } else if (errorMsg.includes("maximum number of spins") || errorMsg.includes("max out")) {
+          setErrorType("full");
+        } else {
+          setErrorType("not-found");
+        }
       }
     });
   }, [slug]);
@@ -266,18 +277,31 @@ export function PublicSpinPage() {
     );
   }
 
-  // Show error if wheel not found
+  // Show error if wheel not found, expired, or full
   if (loadError || !wheel) {
+    let title = "Wheel Not Found";
+    let message = "This wheel doesn't exist or has been removed.";
+    let icon = Frown;
+
+    if (errorType === "expired") {
+      title = "🎉 Thanks for Joining!";
+      message = "This wheel has expired and is no longer accepting spins. We appreciate your participation!";
+    } else if (errorType === "full") {
+      title = "Wheel is Full!";
+      message = "This wheel has reached its maximum capacity. No more spins are available at this time. Thanks for your interest!";
+    }
+
+    const IconComponent = icon;
     return (
       <div className="min-h-screen flex items-center justify-center font-['Inter',sans-serif] px-4" style={{ background: bgGradient }}>
         <motion.div className="text-center" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
           <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-6">
-            <Frown className="w-10 h-10 text-white" />
+            <IconComponent className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-[1.75rem] text-white mb-2 font-['Poppins',sans-serif]" style={{ fontWeight: 700 }}>
-            Wheel Not Found
+            {title}
           </h1>
-          <p className="text-white/70 mb-6">{loadError || "This wheel doesn't exist or has been removed."}</p>
+          <p className="text-white/70 mb-6 max-w-sm">{message}</p>
           <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-salami-green rounded-xl hover:bg-salami-gold hover:text-white transition-all">
             Go Home
           </Link>
