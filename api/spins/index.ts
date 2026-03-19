@@ -38,8 +38,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const wheel = await Wheel.findById(wheelId);
       if (!wheel) return notFound(res, "Wheel not found");
       if (!wheel.isActive) return error(res, "This wheel is no longer active");
-      if (wheel.expiryDate && new Date(wheel.expiryDate) < new Date())
-        return error(res, "This wheel has expired");
+      if (wheel.expiryDate && new Date(wheel.expiryDate) <= new Date())
+        return res.status(410).json({ success: false, error: "This wheel has expired" });
 
       if (wheel.maxSpins) {
         const spinCount = await Spin.countDocuments({ wheelId: wheel._id });
@@ -47,11 +47,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return error(res, "This wheel has reached its maximum number of spins");
       }
 
+      const participantKey = (participantPhone || spinnerEmail || "").trim();
+      if ((wheel as any).maxSpinsPerParticipant && !participantKey) {
+        return error(res, "Participant phone/email is required when per-person spin limit is enabled");
+      }
+
+      if ((wheel as any).maxSpinsPerParticipant && participantKey) {
+        const participantSpinCount = await Spin.countDocuments({
+          wheelId: wheel._id,
+          participantPhone: participantKey,
+        });
+
+        if (participantSpinCount >= (wheel as any).maxSpinsPerParticipant) {
+          return error(
+            res,
+            `This participant has reached the spin limit (${(wheel as any).maxSpinsPerParticipant}) for this wheel`
+          );
+        }
+      }
+
       const spin = await Spin.create({
         wheelId: wheel._id,
         result,
-        participantName: participantName || spinnerName || "Anonymous",
-        participantPhone: participantPhone || spinnerEmail || undefined,
+        participantName: (participantName || spinnerName || "Anonymous").trim(),
+        participantPhone: participantKey || undefined,
       });
 
       const actor = getUserFromRequest(req);

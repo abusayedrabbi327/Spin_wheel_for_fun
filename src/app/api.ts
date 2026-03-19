@@ -141,6 +141,7 @@ export interface Wheel {
   slug: string;
   type: "NAMES" | "NUMBERS" | "DECISIONS" | "PRIZES" | "FOOD" | "CUSTOM";
   maxSpins: number | null;
+  maxSpinsPerParticipant?: number | null;
   expiryDate: string | null;
   allowBetterLuck: boolean;
   isActive: boolean;
@@ -156,6 +157,7 @@ export interface CreateWheelData {
   title: string;
   type?: string;
   maxSpins?: number;
+  maxSpinsPerParticipant?: number;
   expiryDate?: string;
   allowBetterLuck?: boolean;
   items: { label: string; value?: string }[];

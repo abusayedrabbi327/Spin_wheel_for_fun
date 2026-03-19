@@ -116,7 +116,8 @@ export function CampaignDetail() {
     { label: "Total Spins", value: spins.length, icon: Zap, color: "from-salami-green to-salami-green-dark" },
     { label: "Total Options", value: campaign.items.length, icon: Trophy, color: "from-salami-gold to-[#b8942e]" },
     { label: "Remaining Slots", value: remainingSlots, icon: Target, color: "from-emerald-400 to-emerald-600" },
-    { label: "Max Winners", value: campaign.maxSpins || "∞", icon: Users, color: "from-amber-400 to-amber-600" },
+    { label: "Max Total Spins", value: campaign.maxSpins || "∞", icon: Users, color: "from-amber-400 to-amber-600" },
+    { label: "Max Per Person", value: campaign.maxSpinsPerParticipant || "∞", icon: Users, color: "from-indigo-400 to-indigo-600" },
   ];
 
   return (
@@ -196,7 +197,7 @@ export function CampaignDetail() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map((stat, i) => (
           <motion.div
             key={stat.label}

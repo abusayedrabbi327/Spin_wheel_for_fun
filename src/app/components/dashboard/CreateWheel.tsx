@@ -211,6 +211,7 @@ export function CreateWheel() {
   const [title, setTitle] = useState("");
   const [wheelType, setWheelType] = useState<WheelType>("names");
   const [maxWinners, setMaxWinners] = useState("");
+  const [maxSpinsPerPerson, setMaxSpinsPerPerson] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [allowBetterLuck, setAllowBetterLuck] = useState(true);
   const [items, setItems] = useState<WheelItem[]>([
@@ -431,6 +432,7 @@ export function CreateWheel() {
         title: title.trim(),
         type: wheelType.toUpperCase(),
         maxSpins: maxWinners ? parseInt(maxWinners) : undefined,
+        maxSpinsPerParticipant: maxSpinsPerPerson ? parseInt(maxSpinsPerPerson) : undefined,
         expiryDate: finalExpiryDate,
         allowBetterLuck,
         items: filledItems.map((item) => ({
@@ -554,16 +556,34 @@ export function CreateWheel() {
             <div>
               <label className="block text-[0.875rem] text-foreground mb-1.5">
                 <Trophy className="w-4 h-4 inline mr-1" />
-                Max Spins
+                Max Total Spins
               </label>
               <input
                 type="number"
                 value={maxWinners}
                 onChange={(e) => setMaxWinners(e.target.value)}
-                placeholder="e.g. 20 (leave empty for unlimited)"
+                min={1}
+                placeholder="e.g. 100 (leave empty for unlimited)"
                 className="w-full px-4 py-3 rounded-xl border border-border bg-input-background focus:outline-none focus:ring-2 focus:ring-salami-green/30 focus:border-salami-green transition-all"
               />
             </div>
+            <div>
+              <label className="block text-[0.875rem] text-foreground mb-1.5">
+                <Users className="w-4 h-4 inline mr-1" />
+                Max Spins Per Person
+              </label>
+              <input
+                type="number"
+                value={maxSpinsPerPerson}
+                onChange={(e) => setMaxSpinsPerPerson(e.target.value)}
+                min={1}
+                placeholder="e.g. 1 or 2 (leave empty for unlimited)"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-input-background focus:outline-none focus:ring-2 focus:ring-salami-green/30 focus:border-salami-green transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[0.875rem] text-foreground mb-1.5">
                 <Calendar className="w-4 h-4 inline mr-1" />

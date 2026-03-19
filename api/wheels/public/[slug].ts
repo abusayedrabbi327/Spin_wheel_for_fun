@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!wheel) return notFound(res, "Wheel not found");
     if (!wheel.isActive) return notFound(res, "This wheel is no longer active");
-    if (wheel.expiryDate && new Date(wheel.expiryDate) < new Date())
+    if (wheel.expiryDate && new Date(wheel.expiryDate) <= new Date())
       return notFound(res, "This wheel has expired");
 
     if (wheel.maxSpins) {
@@ -41,6 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       title: wheel.title,
       slug: wheel.slug,
       type: wheel.type,
+      maxSpins: wheel.maxSpins,
+      maxSpinsPerParticipant: (wheel as any).maxSpinsPerParticipant,
       allowBetterLuck: wheel.allowBetterLuck,
       isActive: wheel.isActive,
       expiryDate: wheel.expiryDate,

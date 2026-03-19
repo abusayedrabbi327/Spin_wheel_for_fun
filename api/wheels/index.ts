@@ -41,11 +41,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST - Create new wheel
     if (req.method === "POST") {
-      const { title, type, maxSpins, expiryDate, allowBetterLuck, items } = req.body;
+      const { title, type, maxSpins, maxSpinsPerParticipant, expiryDate, allowBetterLuck, items } = req.body;
 
       if (!title) return error(res, "Title is required");
       if (!items || !Array.isArray(items) || items.length < 2)
         return error(res, "At least 2 items are required");
+
+      const parsedMaxSpins = maxSpins ? parseInt(maxSpins) : undefined;
+      const parsedPerParticipant = maxSpinsPerParticipant ? parseInt(maxSpinsPerParticipant) : undefined;
+
+      if (parsedMaxSpins !== undefined && (!Number.isFinite(parsedMaxSpins) || parsedMaxSpins < 1)) {
+        return error(res, "Max spins must be at least 1");
+      }
+
+      if (parsedPerParticipant !== undefined && (!Number.isFinite(parsedPerParticipant) || parsedPerParticipant < 1)) {
+        return error(res, "Max spins per participant must be at least 1");
+      }
 
       const slug = generateSlug(title);
 
@@ -53,7 +64,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         title,
         slug,
         type: type || "CUSTOM",
-        maxSpins: maxSpins ? parseInt(maxSpins) : undefined,
+        maxSpins: parsedMaxSpins,
+        maxSpinsPerParticipant: parsedPerParticipant,
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
         allowBetterLuck: allowBetterLuck ?? true,
         userId: user.userId,

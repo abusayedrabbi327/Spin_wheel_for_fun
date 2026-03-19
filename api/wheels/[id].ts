@@ -59,11 +59,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!wheel) return notFound(res, "Wheel not found");
       if (wheel.userId.toString() !== user.userId) return unauthorized(res, "You don't own this wheel");
 
-      const { title, type, maxSpins, expiryDate, allowBetterLuck, isActive, items } = req.body;
+      const { title, type, maxSpins, maxSpinsPerParticipant, expiryDate, allowBetterLuck, isActive, items } = req.body;
 
       if (title !== undefined) wheel.title = title;
       if (type !== undefined) wheel.type = type;
-      if (maxSpins !== undefined) wheel.maxSpins = maxSpins ? parseInt(maxSpins) : undefined;
+
+      if (maxSpins !== undefined) {
+        const parsedMaxSpins = maxSpins ? parseInt(maxSpins) : undefined;
+        if (parsedMaxSpins !== undefined && (!Number.isFinite(parsedMaxSpins) || parsedMaxSpins < 1)) {
+          return error(res, "Max spins must be at least 1");
+        }
+        wheel.maxSpins = parsedMaxSpins;
+      }
+
+      if (maxSpinsPerParticipant !== undefined) {
+        const parsedPerParticipant = maxSpinsPerParticipant ? parseInt(maxSpinsPerParticipant) : undefined;
+        if (parsedPerParticipant !== undefined && (!Number.isFinite(parsedPerParticipant) || parsedPerParticipant < 1)) {
+          return error(res, "Max spins per participant must be at least 1");
+        }
+        (wheel as any).maxSpinsPerParticipant = parsedPerParticipant;
+      }
+
       if (expiryDate !== undefined) wheel.expiryDate = expiryDate ? new Date(expiryDate) : undefined;
       if (allowBetterLuck !== undefined) wheel.allowBetterLuck = allowBetterLuck;
       if (isActive !== undefined) wheel.isActive = isActive;

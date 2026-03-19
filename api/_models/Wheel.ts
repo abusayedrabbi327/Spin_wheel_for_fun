@@ -13,6 +13,7 @@ export interface IWheel extends Document {
     slug: string;
     type: "NAMES" | "NUMBERS" | "DECISIONS" | "PRIZES" | "FOOD" | "CUSTOM";
     maxSpins?: number;
+    maxSpinsPerParticipant?: number;
     expiryDate?: Date;
     allowBetterLuck: boolean;
     isActive: boolean;
@@ -41,6 +42,7 @@ const wheelSchema = new mongoose.Schema<IWheel>(
             default: "CUSTOM",
         },
         maxSpins: { type: Number },
+        maxSpinsPerParticipant: { type: Number },
         expiryDate: { type: Date },
         allowBetterLuck: { type: Boolean, default: true },
         isActive: { type: Boolean, default: true },
