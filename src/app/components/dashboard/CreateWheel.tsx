@@ -443,7 +443,11 @@ export function CreateWheel() {
 
       if (result.success && result.data) {
         toast.success("Wheel created successfully!");
-        navigate(`/spin/${result.data.slug}`);
+        if (result.data.id) {
+          navigate(`/dashboard/campaign/${result.data.id}`);
+        } else {
+          navigate("/dashboard/wheels");
+        }
       } else {
         toast.error(result.error || "Failed to create wheel");
       }
